@@ -17,6 +17,11 @@ import org.appcelerator.kroll.common.TiConfig;
 
 import android.app.Activity;
 import android.os.Build;
+import java.io.File;
+import android.content.ContentValues;
+import android.content.Context;
+import android.provider.MediaStore;
+import android.net.Uri;
 import android.media.RingtoneManager;
 
 @Kroll.module(name="Tiringtonemanager", id="de.appwerft.ringtonmanager")
@@ -41,8 +46,10 @@ public class TiringtonemanagerModule extends KrollModule {
 	// Methods
 	@Kroll.method
 	public void setActualDefaultRingtone(String filepath) {
+        Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
+
         
-         File k = new File(filepath);
+        File k = new File(filepath);
         
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DATA, k.getAbsolutePath());
@@ -58,21 +65,13 @@ public class TiringtonemanagerModule extends KrollModule {
         
         //Insert it into the database
         Uri uri = MediaStore.Audio.Media.getContentUriForPath(k.getAbsolutePath());
-        Uri newUri = this.getContentResolver().insert(uri, values);
-        Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
+        Uri newUri = getActivity().getContentResolver().insert(uri, values);
         
-        RingtoneManager.setActualDefaultRingtoneUri(
+                RingtoneManager.setActualDefaultRingtoneUri(
             currentActivity,
             RingtoneManager.TYPE_RINGTONE,
             newUri
         );
-        
-
-        
-		Log.d(LCAT, "example called");
-		return "hello world";
-	}
-
-
+    }
 }
 

@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0.0
+apiversion: 2
+architectures: armeabi armeabi-v7a x86
+description: tiringtonemanager
+author: Raner Schleevoigt
+license: Specify your license
+copyright: Copyright (c) 2016 by Your Company
+
+# these should not be edited
+name: tiringtonemanager
+moduleid: de.appwerft.ringtonmanager
+guid: 79cfafdb-34b1-49b9-bee3-5334ea2fdddb
+platform: android
+minsdk: 4.0.0.GA
