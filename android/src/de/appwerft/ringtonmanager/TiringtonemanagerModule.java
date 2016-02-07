@@ -15,6 +15,9 @@ import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiConfig;
 
+import android.app.Activity;
+import android.os.Build;
+import android.media.RingtoneManager;
 
 @Kroll.module(name="Tiringtonemanager", id="de.appwerft.ringtonmanager")
 public class TiringtonemanagerModule extends KrollModule {
