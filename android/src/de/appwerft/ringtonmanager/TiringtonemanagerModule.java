@@ -18,42 +18,6 @@ import org.appcelerator.kroll.common.TiConfig;
 
 @Kroll.module(name="Tiringtonemanager", id="de.appwerft.ringtonmanager")
 public class TiringtonemanagerModule extends KrollModule {
-    
-    
-    
-    /* example from http://stackoverflow.com/questions/1271777/how-to-set-ringtone-in-android-from-my-activity */
-    
-    File k = new File(path, "mysong.mp3"); // path is a file to /sdcard/media/ringtone
-    
-    ContentValues values = new ContentValues();
-    values.put(MediaStore.MediaColumns.DATA, k.getAbsolutePath());
-    values.put(MediaStore.MediaColumns.TITLE, "My Song title");
-    values.put(MediaStore.MediaColumns.SIZE, 215454);
-    values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp3");
-    values.put(MediaStore.Audio.Media.ARTIST, "Madonna");
-    values.put(MediaStore.Audio.Media.DURATION, 230);
-    values.put(MediaStore.Audio.Media.IS_RINGTONE, true);
-    values.put(MediaStore.Audio.Media.IS_NOTIFICATION, false);
-    values.put(MediaStore.Audio.Media.IS_ALARM, false);
-    values.put(MediaStore.Audio.Media.IS_MUSIC, false);
-    
-    //Insert it into the database
-    Uri uri = MediaStore.Audio.Media.getContentUriForPath(k.getAbsolutePath());
-    Uri newUri = this.getContentResolver().insert(uri, values);
-    
-    RingtoneManager.setActualDefaultRingtoneUri(
-                                                myActivity,
-                                                RingtoneManager.TYPE_RINGTONE,
-                                                newUri
-                                                );
-    
-    
-    
-    
-    
-    
-    
-    
 
 	// Standard Debugging variables
 	private static final String LCAT = "TiringtonemanagerModule";
@@ -62,22 +26,46 @@ public class TiringtonemanagerModule extends KrollModule {
 	// You can define constants with @Kroll.constant, for example:
 	// @Kroll.constant public static final String EXTERNAL_NAME = value;
 
-	public TiringtonemanagerModule()
-	{
+	public TiringtonemanagerModule() {
 		super();
 	}
 
 	@Kroll.onAppCreate
-	public static void onAppCreate(TiApplication app)
-	{
+	public static void onAppCreate(TiApplication app)	{
 		Log.d(LCAT, "inside onAppCreate");
-		// put module init code that needs to run when the application is created
 	}
 
 	// Methods
 	@Kroll.method
-	public String example()
-	{
+	public void setActualDefaultRingtone(String filepath) {
+        
+         File k = new File(filepath);
+        
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DATA, k.getAbsolutePath());
+        values.put(MediaStore.MediaColumns.TITLE, "Ringtone");
+        values.put(MediaStore.MediaColumns.SIZE, 215454); // how can I determine?
+        values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp3");
+        values.put(MediaStore.Audio.Media.ARTIST, "NoArtist");
+        values.put(MediaStore.Audio.Media.DURATION, 230); // how can I determine?
+        values.put(MediaStore.Audio.Media.IS_RINGTONE, true);
+        values.put(MediaStore.Audio.Media.IS_NOTIFICATION, false);
+        values.put(MediaStore.Audio.Media.IS_ALARM, false);
+        values.put(MediaStore.Audio.Media.IS_MUSIC, false);
+        
+        //Insert it into the database
+        Uri uri = MediaStore.Audio.Media.getContentUriForPath(k.getAbsolutePath());
+        Uri newUri = this.getContentResolver().insert(uri, values);
+        Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
+        
+        RingtoneManager.setActualDefaultRingtoneUri(
+            currentActivity,
+            RingtoneManager.TYPE_RINGTONE,
+            newUri
+        );
+        
+
+        
 		Log.d(LCAT, "example called");
 		return "hello world";
 	}
