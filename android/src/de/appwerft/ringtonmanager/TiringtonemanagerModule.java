@@ -24,6 +24,11 @@ import android.provider.MediaStore;
 import android.net.Uri;
 import android.media.RingtoneManager;
 
+import android.provider.Settings;
+import android.provider.Settings.System;
+import android.content.Intent;
+//import android.content.pm.PackageManager;
+
 @Kroll.module(name="Tiringtonemanager", id="de.appwerft.ringtonmanager")
 public class TiringtonemanagerModule extends KrollModule {
 
@@ -31,8 +36,6 @@ public class TiringtonemanagerModule extends KrollModule {
 	private static final String LCAT = "TiringtonemanagerModule";
 	private static final boolean DBG = TiConfig.LOGD;
 
-	// You can define constants with @Kroll.constant, for example:
-	// @Kroll.constant public static final String EXTERNAL_NAME = value;
 
 	public TiringtonemanagerModule() {
 		super();
@@ -44,13 +47,21 @@ public class TiringtonemanagerModule extends KrollModule {
 	}
 
 	// Methods
-	@Kroll.method
-	public void setActualDefaultRingtone(String filepath) {
+	
+    private void setRingtone(Uri uri) {
         Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
-
+        RingtoneManager.setActualDefaultRingtoneUri(
+                currentActivity,
+                RingtoneManager.TYPE_RINGTONE,
+                uri
+        );
+    }
+    
+    
+    @Kroll.method
+	public void setActualDefaultRingtone(String filepath) {
         
         File k = new File(filepath);
-        
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DATA, k.getAbsolutePath());
         values.put(MediaStore.MediaColumns.TITLE, "Ringtone");
@@ -66,12 +77,16 @@ public class TiringtonemanagerModule extends KrollModule {
         //Insert it into the database
         Uri uri = MediaStore.Audio.Media.getContentUriForPath(k.getAbsolutePath());
         Uri newUri = getActivity().getContentResolver().insert(uri, values);
+
+        boolean canDo =  android.provider.Settings.System.canWrite(TiApplication.getInstance());
+        if (false == canDo) {
+            Intent grantIntent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+            startActivity(grantIntent);
+        } else {
+            setRingtone(newUri);
+
+        }
         
-                RingtoneManager.setActualDefaultRingtoneUri(
-            currentActivity,
-            RingtoneManager.TYPE_RINGTONE,
-            newUri
-        );
     }
 }
 
