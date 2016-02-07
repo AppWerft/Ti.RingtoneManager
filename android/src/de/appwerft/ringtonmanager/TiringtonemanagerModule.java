@@ -17,8 +17,43 @@ import org.appcelerator.kroll.common.TiConfig;
 
 
 @Kroll.module(name="Tiringtonemanager", id="de.appwerft.ringtonmanager")
-public class TiringtonemanagerModule extends KrollModule
-{
+public class TiringtonemanagerModule extends KrollModule {
+    
+    
+    
+    /* example from http://stackoverflow.com/questions/1271777/how-to-set-ringtone-in-android-from-my-activity */
+    
+    File k = new File(path, "mysong.mp3"); // path is a file to /sdcard/media/ringtone
+    
+    ContentValues values = new ContentValues();
+    values.put(MediaStore.MediaColumns.DATA, k.getAbsolutePath());
+    values.put(MediaStore.MediaColumns.TITLE, "My Song title");
+    values.put(MediaStore.MediaColumns.SIZE, 215454);
+    values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp3");
+    values.put(MediaStore.Audio.Media.ARTIST, "Madonna");
+    values.put(MediaStore.Audio.Media.DURATION, 230);
+    values.put(MediaStore.Audio.Media.IS_RINGTONE, true);
+    values.put(MediaStore.Audio.Media.IS_NOTIFICATION, false);
+    values.put(MediaStore.Audio.Media.IS_ALARM, false);
+    values.put(MediaStore.Audio.Media.IS_MUSIC, false);
+    
+    //Insert it into the database
+    Uri uri = MediaStore.Audio.Media.getContentUriForPath(k.getAbsolutePath());
+    Uri newUri = this.getContentResolver().insert(uri, values);
+    
+    RingtoneManager.setActualDefaultRingtoneUri(
+                                                myActivity,
+                                                RingtoneManager.TYPE_RINGTONE,
+                                                newUri
+                                                );
+    
+    
+    
+    
+    
+    
+    
+    
 
 	// Standard Debugging variables
 	private static final String LCAT = "TiringtonemanagerModule";
