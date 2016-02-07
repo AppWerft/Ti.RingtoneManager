@@ -11,17 +11,15 @@ Currently this module has only one method 'setActualDefaultRingtone(nativePath_t
 
 ~~~
 module.exports = function(record) {
-var xhr = Ti.Network.createHTTPClient({
-onload : function() {
-var DEPOT = Ti.Filesystem.applicationCacheDirectory;
-var fn = Ti.Filesystem.getFile(DEPOT, record.filename);
-fn.write(this.responseData);
-require('de.appwerft.ringtonemanager').setActualDefaultRingtone(fn.nativePath);
-}
-});
-xhr.open('GET',url.audio);
-xhr.send();
-
+    var xhr = Ti.Network.createHTTPClient({
+        onload : function() {
+            var fn = Ti.Filesystem.getFile(Ti.Filesystem.applicationCacheDirectory, record.filename);
+            fn.write(this.responseData);
+            require('de.appwerft.ringtonemanager').setActualDefaultRingtone(fn.nativePath);
+        }
+    });
+    xhr.open('GET',url.audio);
+    xhr.send();
 };
 
 ~~~
