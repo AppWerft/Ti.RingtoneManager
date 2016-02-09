@@ -43,23 +43,7 @@ public class TiringtonemanagerModule extends KrollModule {
 		Log.d(LCAT, "inside onAppCreate");
 	}
 
-	// Methods
-    @Kroll.method
-    private boolean hasSystemWritePermission() {
-        if (Build.VERSION.SDK_INT < 23) {
-            return true;
-        }
-        Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
-        if (currentActivity.checkSelfPermission(Manifest.permission.WRITE_SETTINGS) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        return false;
-    }
-
-    /* solution for Titanium in relation to other permission
-    https://github.com/gimdongwoo/Ti-Android-RequestStoragePermission/blob/master/android/src/com/boxoutthinkers/reqstorageperm/TiAndroidRequeststoragepermissionModule.java
-     */
-	
+		
     private void setRingtone(Uri uri) {
         
         RingtoneManager.setActualDefaultRingtoneUri(
@@ -69,29 +53,7 @@ public class TiringtonemanagerModule extends KrollModule {
         );
     }
    
-    if (false == hasSystemWritePermission()) {
-        // Should we show an explanation?
-                if (ActivityCompat.shouldShowRequestPermissionRationale(currentActivity,
-                                                                    Manifest.permission.WRITE_SETTINGS)) {
-            
-            // Show an expanation to the user *asynchronously* -- don't block
-            // this thread waiting for the user's response! After the user
-            // sees the explanation, try again to request the permission.
-            
-        } else {
-            
-            // No explanation needed, we can request the permission.
-
-            ActivityCompat.requestPermissions(currentActivity,
-                                              new String[]{Manifest.permission.WRITE_SETTINGS},
-                                              MY_PERMISSIONS_REQUEST_WRITE_SETTINGS);
-            
-            // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-            // app-defined int constant. The callback method gets the
-            // result of the request.
-        }
-    }
-    
+        
     @Kroll.method
 	public void setActualDefaultRingtone(String filepath) {
         File k = new File(filepath);
