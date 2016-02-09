@@ -22,6 +22,8 @@ import android.media.RingtoneManager;
 import android.provider.Settings;
 import android.provider.Settings.System;
 import android.content.Intent;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.app.ActivityCompat;
 //import android.content.pm.PackageManager;
 
 @Kroll.module(name="Tiringtonemanager", id="de.appwerft.ringtonmanager")
@@ -53,7 +55,10 @@ public class TiringtonemanagerModule extends KrollModule {
         }
         return false;
     }
-    
+
+    /* solution for Titanium in relation to other permission
+    https://github.com/gimdongwoo/Ti-Android-RequestStoragePermission/blob/master/android/src/com/boxoutthinkers/reqstorageperm/TiAndroidRequeststoragepermissionModule.java
+     */
 	
     private void setRingtone(Uri uri) {
         
@@ -64,10 +69,10 @@ public class TiringtonemanagerModule extends KrollModule {
         );
     }
    
-    if (ContextCompat.checkSelfPermission(currentActivity, Manifest.permission.WRITE_SETTINGS)
-        != PackageManager.PERMISSION_GRANTED) {
+    if (false == hasSystemWritePermission()) {
         // Should we show an explanation?
-                if (ActivityCompat.shouldShowRequestPermissionRationale(currentActivity,Manifest.permission.WRITE_SETTINGS)) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(currentActivity,
+                                                                    Manifest.permission.WRITE_SETTINGS)) {
             
             // Show an expanation to the user *asynchronously* -- don't block
             // this thread waiting for the user's response! After the user
@@ -89,7 +94,6 @@ public class TiringtonemanagerModule extends KrollModule {
     
     @Kroll.method
 	public void setActualDefaultRingtone(String filepath) {
-        
         File k = new File(filepath);
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DATA, k.getAbsolutePath());
@@ -119,3 +123,9 @@ public class TiringtonemanagerModule extends KrollModule {
     }
 }
 
+    /* Proposal for generic requester */
+    @Kroll.method
+    public void requestPermission(String permission) { 
+        Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
+        if (ContextCompat.checkSelfPermission(currentActivity,permission) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(currentActivity,new String[]{permission},0); }
