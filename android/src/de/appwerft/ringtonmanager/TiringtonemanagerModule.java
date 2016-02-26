@@ -68,26 +68,9 @@ public class TiringtonemanagerModule extends KrollModule {
         values.put(MediaStore.Audio.Media.IS_NOTIFICATION, false);
         values.put(MediaStore.Audio.Media.IS_ALARM, false);
         values.put(MediaStore.Audio.Media.IS_MUSIC, false);
-        
         //Insert it into the database
         Uri uri = MediaStore.Audio.Media.getContentUriForPath(k.getAbsolutePath());
         Uri newUri = getActivity().getContentResolver().insert(uri, values);
-
-        boolean canDo =  android.provider.Settings.System.canWrite(TiApplication.getInstance());
-        if (false == canDo) {
-            Intent grantIntent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
-            startActivity(grantIntent);
-        } else {
-            setRingtone(newUri);
-
-        }
-        
+        setRingtone(newUri);
     }
 }
-
-    /* Proposal for generic requester */
-    @Kroll.method
-    public void requestPermission(String permission) { 
-        Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
-        if (ContextCompat.checkSelfPermission(currentActivity,permission) != PackageManager.PERMISSION_GRANTED)
-            ActivityCompat.requestPermissions(currentActivity,new String[]{permission},0); }
