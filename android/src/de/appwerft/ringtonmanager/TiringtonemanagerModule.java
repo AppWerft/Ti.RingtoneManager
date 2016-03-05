@@ -9,10 +9,15 @@ import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiConfig;
+import org.appcelerator.titanium.io.TiBaseFile;
+import org.appcelerator.titanium.io.TiFileFactory;
+import org.appcelerator.titanium.TiC;
+import org.appcelerator.titanium.util.TiConvert;
 
 import android.app.Activity;
 import android.os.Build;
 import java.io.File;
+import java.util.HashMap;
 import android.content.ContentValues;
 import android.content.Context;
 import android.provider.MediaStore;
@@ -24,6 +29,7 @@ import android.provider.Settings.System;
 import android.content.Intent;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.app.ActivityCompat;
+
 //import android.content.pm.PackageManager;
 
 @Kroll.module(name="Tiringtonemanager", id="de.appwerft.ringtonmanager")
@@ -57,17 +63,17 @@ public class TiringtonemanagerModule extends KrollModule {
     @Kroll.method
 	public void setActualDefaultRingtone(Object args) {
 		HashMap<String, String> d = (HashMap<String, String>) args;
-		final TiBaseFile file;
+		final TiBaseFile filepath;
 		
 		if (!d.containsKey(TiC.PROPERTY_URL)){
 			Log.e(LCAT,"url not provided");
 			return;
 		}
+		String url = TiConvert.toString(d.get(TiC.PROPERTY_URL));
+		String absUrl = resolveUrl(null, url);
 		filepath = TiFileFactory.createTitaniumFile(new String[] { absUrl }, false);
-
-        File k = new File(filepath);
         ContentValues values = new ContentValues();
-        values.put(MediaStore.MediaColumns.DATA, k.getAbsolutePath());
+        values.put(MediaStore.MediaColumns.DATA, filepath);
         values.put(MediaStore.MediaColumns.TITLE, "Ringtone");
         values.put(MediaStore.MediaColumns.SIZE, 215454); // how can I determine?
         values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp3");
