@@ -55,7 +55,16 @@ public class TiringtonemanagerModule extends KrollModule {
    
         
     @Kroll.method
-	public void setActualDefaultRingtone(String filepath) {
+	public void setActualDefaultRingtone(Object args) {
+		HashMap<String, String> d = (HashMap<String, String>) args;
+		final TiBaseFile file;
+		
+		if (!d.containsKey(TiC.PROPERTY_URL)){
+			Log.e(LCAT,"url not provided");
+			return;
+		}
+		filepath = TiFileFactory.createTitaniumFile(new String[] { absUrl }, false);
+
         File k = new File(filepath);
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DATA, k.getAbsolutePath());
