@@ -119,9 +119,9 @@ Handle<Value> TiringtonemanagerModule::setActualDefaultRingtone(const Arguments&
 	}
 	static jmethodID methodID = NULL;
 	if (!methodID) {
-		methodID = env->GetMethodID(TiringtonemanagerModule::javaClass, "setActualDefaultRingtone", "(Ljava/lang/String;)V");
+		methodID = env->GetMethodID(TiringtonemanagerModule::javaClass, "setActualDefaultRingtone", "(Ljava/lang/Object;)V");
 		if (!methodID) {
-			const char *error = "Couldn't find proxy method 'setActualDefaultRingtone' with signature '(Ljava/lang/String;)V'";
+			const char *error = "Couldn't find proxy method 'setActualDefaultRingtone' with signature '(Ljava/lang/Object;)V'";
 			LOGE(TAG, error);
 				return titanium::JSException::Error(error);
 		}
@@ -140,12 +140,12 @@ Handle<Value> TiringtonemanagerModule::setActualDefaultRingtone(const Arguments&
 
 
 
-	
+	bool isNew_0;
 	
 	if (!args[0]->IsNull()) {
 		Local<Value> arg_0 = args[0];
 		jArguments[0].l =
-			titanium::TypeConverter::jsValueToJavaString(env, arg_0);
+			titanium::TypeConverter::jsValueToJavaObject(env, arg_0, &isNew_0);
 	} else {
 		jArguments[0].l = NULL;
 	}
@@ -159,7 +159,9 @@ Handle<Value> TiringtonemanagerModule::setActualDefaultRingtone(const Arguments&
 
 
 
+			if (isNew_0) {
 				env->DeleteLocalRef(jArguments[0].l);
+			}
 
 
 	if (env->ExceptionCheck()) {

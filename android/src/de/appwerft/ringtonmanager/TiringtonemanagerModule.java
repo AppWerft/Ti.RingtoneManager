@@ -21,6 +21,7 @@ import java.util.HashMap;
 import android.content.ContentValues;
 import android.content.Context;
 import android.provider.MediaStore;
+import android.provider.MediaStore.MediaColumns;
 import android.net.Uri;
 import android.media.RingtoneManager;
 import android.widget.Toast;
@@ -54,10 +55,7 @@ public class TiringtonemanagerModule extends KrollModule {
 	@Kroll.method
 	public void setActualDefaultRingtone(Object args) {
 		Context context = TiApplication.getInstance().getApplicationContext();
-		
-		HashMap<String, String> d = (HashMap<String, String>) args;
-		final TiBaseFile file;
-
+		HashMap<String, String> d = (HashMap<String, String>) args;		
 		if (!d.containsKey(TiC.PROPERTY_URL)) {
 			Log.e(LCAT, "url not provided");
 			return;
@@ -66,12 +64,17 @@ public class TiringtonemanagerModule extends KrollModule {
 		String absUrl = resolveUrl(null, url);
 		Log.e(LCAT, absUrl);
 
-		File newSoundFile = TiFileFactory.createTitaniumFile(
+		TiBaseFile file = TiFileFactory.createTitaniumFile(
 				new String[] { absUrl }, false);
+		
+		// http://www.programcreek.com/java-api-examples/index.php?source_dir=MicDroid-master/src/com/intervigil/micdroid/helper/MediaStoreHelper.java
+		
+		
 		ContentValues values = new ContentValues();
-		values.put(MediaStore.MediaColumns.DATA, newSoundFile.getAbsolutePath());
+		
+		values.put(MediaStore.MediaColumns.DATA, file.nativePath());
 		values.put(MediaStore.MediaColumns.TITLE, "Ringtone");
-		values.put(MediaStore.MediaColumns.SIZE, 215454); // how can I
+		values.put(MediaStore.MediaColumns.SIZE,file.size()); // how can I
 															// determine?
 		values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp3");
 		values.put(MediaStore.Audio.Media.ARTIST, "NoArtist");
@@ -82,13 +85,10 @@ public class TiringtonemanagerModule extends KrollModule {
 		values.put(MediaStore.Audio.Media.IS_ALARM, false);
 		values.put(MediaStore.Audio.Media.IS_MUSIC, false);
 		// Insert it into the database
-		Uri uri = MediaStore.Audio.Media.getContentUriForPath(newSoundFile
-				.getAbsolutePath());
-		context.getContentResolver().delete(
-				uri,
-				MediaStore.MediaColumns.DATA + "=\""
-						+ newSoundFile.getAbsolutePath() + "\"", null);
-		Uri newUri = context.getContentResolver().insert(uri, values);
+		Uri uri = MediaStore.Audio.Media.getContentUriForPath(file.nativePath());
+			  Uri newUri = context.getContentResolver().insert(uri, values);
+			  RingtoneManager.setActualDefaultRingtoneUri(context,
+			      RingtoneManager.TYPE_RINGTONE, newUri);
 		
 		// TODO return of success
 		
