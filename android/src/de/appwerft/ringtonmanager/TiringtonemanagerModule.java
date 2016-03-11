@@ -23,6 +23,8 @@ import android.content.Context;
 import android.provider.MediaStore;
 import android.net.Uri;
 import android.media.RingtoneManager;
+import android.widget.Toast;
+import android.content.Context;
 
 import android.provider.Settings;
 import android.provider.Settings.System;
@@ -51,6 +53,8 @@ public class TiringtonemanagerModule extends KrollModule {
 
 	@Kroll.method
 	public void setActualDefaultRingtone(Object args) {
+		Context context = TiApplication.getInstance().getApplicationContext();
+		
 		HashMap<String, String> d = (HashMap<String, String>) args;
 		final TiBaseFile file;
 
@@ -85,16 +89,10 @@ public class TiringtonemanagerModule extends KrollModule {
 				MediaStore.MediaColumns.DATA + "=\""
 						+ newSoundFile.getAbsolutePath() + "\"", null);
 		Uri newUri = context.getContentResolver().insert(uri, values);
-
-		try {
-			RingtoneManager.setActualDefaultRingtoneUri(context,
-					RingtoneManager.TYPE_RINGTONE, newUri);
-			KitKatToast.makeText(context, R.string.msg_setAsRingTuneSuccess,
-					KitKatToast.LENGTH_LONG).show();
-		} catch (Exception e) {
-			if (DebugUtil.DEBUG) {
-				DebugUtil.logError(new Exception(), e.toString());
-			}
-		}
+		
+		// TODO return of success
+		
+		
+		
 	}
 }
