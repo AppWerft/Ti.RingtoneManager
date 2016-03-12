@@ -83,7 +83,6 @@ public class TiringtonemanagerModule extends KrollModule {
 		ContentValues values = new ContentValues();
 		values.put(MediaStore.MediaColumns.DATA, file.nativePath());
 		values.put(MediaStore.MediaColumns.TITLE, getResString("app_name"));
-
 		values.put(MediaStore.MediaColumns.SIZE, file.size());
 		values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp3");
 		values.put(MediaStore.Audio.Media.ARTIST, "NoArtist");
