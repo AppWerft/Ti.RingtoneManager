@@ -94,11 +94,11 @@ public class TiringtonemanagerModule extends KrollModule {
 
 		Uri uri = MediaStore.Audio.Media
 				.getContentUriForPath(file.nativePath());
-		Log.e(LCAT, uri.toString());
+		Log.d(LCAT, uri.toString());
 		
 		Context context = TiApplication.getInstance().getApplicationContext();
 		Uri mUri = context.getContentResolver().insert(uri, values);
-		Log.e(LCAT, mUri.toString());
+		Log.d(LCAT, mUri.toString());
 
 		try {
 			RingtoneManager.setActualDefaultRingtoneUri(context,
