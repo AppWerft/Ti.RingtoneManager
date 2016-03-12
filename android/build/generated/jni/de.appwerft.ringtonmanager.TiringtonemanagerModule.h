@@ -31,6 +31,7 @@ public:
 private:
 	// Methods -----------------------------------------------------------
 	static v8::Handle<v8::Value> setActualDefaultRingtone(const v8::Arguments&);
+	static v8::Handle<v8::Value> getActualDefaultRingtone(const v8::Arguments&);
 
 	// Dynamic property accessors ----------------------------------------
 

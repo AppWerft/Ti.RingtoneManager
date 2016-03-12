@@ -90,6 +90,7 @@ Handle<FunctionTemplate> TiringtonemanagerModule::getProxyTemplate()
 
 	// Method bindings --------------------------------------------------------
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "setActualDefaultRingtone", TiringtonemanagerModule::setActualDefaultRingtone);
+	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "getActualDefaultRingtone", TiringtonemanagerModule::getActualDefaultRingtone);
 
 	Local<ObjectTemplate> prototypeTemplate = proxyTemplate->PrototypeTemplate();
 	Local<ObjectTemplate> instanceTemplate = proxyTemplate->InstanceTemplate();
@@ -173,6 +174,58 @@ Handle<Value> TiringtonemanagerModule::setActualDefaultRingtone(const Arguments&
 
 
 	return v8::Undefined();
+
+}
+Handle<Value> TiringtonemanagerModule::getActualDefaultRingtone(const Arguments& args)
+{
+	LOGD(TAG, "getActualDefaultRingtone()");
+	HandleScope scope;
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		return titanium::JSException::GetJNIEnvironmentError();
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(TiringtonemanagerModule::javaClass, "getActualDefaultRingtone", "()Ljava/lang/String;");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'getActualDefaultRingtone' with signature '()Ljava/lang/String;'";
+			LOGE(TAG, error);
+				return titanium::JSException::Error(error);
+		}
+	}
+
+	titanium::Proxy* proxy = titanium::Proxy::unwrap(args.Holder());
+
+	jvalue* jArguments = 0;
+
+	jobject javaProxy = proxy->getJavaObject();
+	jstring jResult = (jstring)env->CallObjectMethodA(javaProxy, methodID, jArguments);
+
+
+
+	if (!JavaObject::useGlobalRefs) {
+		env->DeleteLocalRef(javaProxy);
+	}
+
+
+
+	if (env->ExceptionCheck()) {
+		Handle<Value> jsException = titanium::JSException::fromJavaException();
+		env->ExceptionClear();
+		return jsException;
+	}
+
+	if (jResult == NULL) {
+		return Null();
+	}
+
+	Handle<Value> v8Result = titanium::TypeConverter::javaStringToJsString(env, jResult);
+
+	env->DeleteLocalRef(jResult);
+
+
+	return v8Result;
 
 }
 
