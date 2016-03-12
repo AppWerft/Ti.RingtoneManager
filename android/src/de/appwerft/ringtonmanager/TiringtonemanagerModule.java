@@ -66,14 +66,14 @@ public class TiringtonemanagerModule extends KrollModule {
 	@Kroll.method
 	public Boolean setActualDefaultRingtone(Object args) {
 		HashMap<String, String> d = (HashMap<String, String>) args;
-		final TiBaseFile file;
+		final TiBaseFile ringtoneFile;
 		if (!d.containsKey(TiC.PROPERTY_URL)){
 			Log.e(LCAT,"url not provided");
 			return false;
 		}
 		String url = TiConvert.toString(d.get(TiC.PROPERTY_URL));
 		String absUrl = resolveUrl(null, url);
-		file = TiFileFactory.createTitaniumFile(new String[] { absUrl }, false);
+		ringtoneFile= TiFileFactory.createTitaniumFile(new String[] { absUrl }, false);
 	
 		String soundname = TiApplication.getInstance().getPackageName() + " ringtone";
 		if (d.containsKey(TiC.PROPERTY_TITLE)){
@@ -81,9 +81,9 @@ public class TiringtonemanagerModule extends KrollModule {
 		}
 		
 		ContentValues values = new ContentValues();
-		values.put(MediaStore.MediaColumns.DATA, file.nativePath());
+		values.put(MediaStore.MediaColumns.DATA, ringtoneFile.nativePath());
 		values.put(MediaStore.MediaColumns.TITLE, getResString("app_name"));
-		values.put(MediaStore.MediaColumns.SIZE, file.size());
+		values.put(MediaStore.MediaColumns.SIZE, ringtoneFile.size());
 		values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp3");
 		values.put(MediaStore.Audio.Media.ARTIST, "NoArtist");
 		values.put(MediaStore.Audio.Media.DURATION, 230);
@@ -93,7 +93,7 @@ public class TiringtonemanagerModule extends KrollModule {
 		values.put(MediaStore.Audio.Media.IS_MUSIC, true);
 
 		Uri uri = MediaStore.Audio.Media
-				.getContentUriForPath(file.nativePath());
+				.getContentUriForPath(ringtoneFile.nativePath());
 		Log.d(LCAT, uri.toString());
 		
 		Context context = TiApplication.getInstance().getApplicationContext();
