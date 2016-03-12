@@ -13,12 +13,15 @@ import org.appcelerator.titanium.io.TiBaseFile;
 import org.appcelerator.titanium.io.TiFileFactory;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.util.TiConvert;
+import org.appcelerator.titanium.util.TiRHelper;
+import org.appcelerator.titanium.util.TiRHelper.ResourceNotFoundException;
 
 import android.app.Activity;
 import android.os.Build;
 import java.io.File;
 import java.util.HashMap;
 import android.content.ContentValues;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.provider.MediaStore;
 import android.provider.MediaStore.MediaColumns;
@@ -41,10 +44,18 @@ public class TiringtonemanagerModule extends KrollModule {
 	// Standard Debugging variables
 	private static final String LCAT = "Tiringtone";
 	private static final boolean DBG = TiConfig.LOGD;
-	Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
 
 	public TiringtonemanagerModule() {
 		super();
+	}
+
+	public static int getResString(String str) {
+		try {
+			return TiRHelper.getApplicationResource("string." + str);
+		} catch (ResourceNotFoundException e) {
+			e.printStackTrace();
+			return 0;
+		}
 	}
 
 	@Kroll.onAppCreate
@@ -70,33 +81,60 @@ public class TiringtonemanagerModule extends KrollModule {
 			title = hashmap.get("title");
 		}
 		String absUrl = resolveUrl(null, url);
-		
 
 		TiBaseFile file = TiFileFactory.createTitaniumFile(
 				new String[] { absUrl }, false);
 
 		// http://www.programcreek.com/java-api-examples/index.php?source_dir=MicDroid-master/src/com/intervigil/micdroid/helper/MediaStoreHelper.java
 
-		ContentValues values = new ContentValues();
-
-		values.put(MediaStore.MediaColumns.DATA, file.nativePath());
 		Log.e(LCAT, file.nativePath());
 
-		values.put(MediaStore.MediaColumns.TITLE, title);
+		ContentValues values = new ContentValues();
+		values.put(MediaStore.MediaColumns.DATA, file.nativePath());
+		values.put(MediaStore.MediaColumns.TITLE, getResString("app_name"));
+
 		values.put(MediaStore.MediaColumns.SIZE, file.size());
 		values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp3");
 		values.put(MediaStore.Audio.Media.ARTIST, "NoArtist");
 		values.put(MediaStore.Audio.Media.DURATION, 230);
 		values.put(MediaStore.Audio.Media.IS_RINGTONE, true);
-		values.put(MediaStore.Audio.Media.IS_NOTIFICATION, false);
-		values.put(MediaStore.Audio.Media.IS_ALARM, false);
-		values.put(MediaStore.Audio.Media.IS_MUSIC, false);
-		// Insert it into the table files in sqlite
+		values.put(MediaStore.Audio.Media.IS_NOTIFICATION, true);
+		values.put(MediaStore.Audio.Media.IS_ALARM, true);
+		values.put(MediaStore.Audio.Media.IS_MUSIC, true);
+		Uri uri = MediaStore.Audio.Media
+				.getContentUriForPath(file.nativePath());
 		Context context = TiApplication.getInstance().getApplicationContext();
-		Uri uri = MediaStore.Audio.Media.getContentUriForPath(file.nativePath());
-		Uri ringUri = context.getContentResolver().insert(uri, values);
-		RingtoneManager.setActualDefaultRingtoneUri(context,RingtoneManager.TYPE_RINGTONE, ringUri);
+		ContentResolver mCr = context.getContentResolver();
+		Uri newUri = mCr.insert(uri, values);
+		try {
+			RingtoneManager.setActualDefaultRingtoneUri(context,
+					RingtoneManager.TYPE_RINGTONE, newUri);
+			Settings.System.putString(mCr, Settings.System.RINGTONE,
+					newUri.toString());
+		} catch (Throwable t) {
+
+			// TODO Handle exception
+		}
+		// Alternatives:
+		// http://stackoverflow.com/questions/17570636/how-to-set-mp3-as-ringtone
+		/*
+		 * 
+		 * Context context =
+		 * TiApplication.getInstance().getApplicationContext(); Uri uri =
+		 * MediaStore.Audio.Media.getContentUriForPath(file.nativePath()); Uri
+		 * ringUri = context.getContentResolver().insert(uri, values);
+		 * RingtoneManager
+		 * .setActualDefaultRingtoneUri(context,RingtoneManager.TYPE_RINGTONE,
+		 * ringUri);
+		 */
 		// TODO return of success
 
+	}
+
+	@Kroll.method
+	public String getActualDefaultRingtone() {
+		Context context = TiApplication.getInstance().getApplicationContext();
+		Uri uri = RingtoneManager.getActualDefaultRingtoneUri(context,RingtoneManager.TYPE_RINGTONE);
+		return uri.toString();
 	}
 }
