@@ -67,19 +67,21 @@ public class TiringtonemanagerModule extends KrollModule {
 	public Boolean setActualDefaultRingtone(Object args) {
 		HashMap<String, String> d = (HashMap<String, String>) args;
 		final TiBaseFile ringtoneFile;
-		if (!d.containsKey(TiC.PROPERTY_URL)){
-			Log.e(LCAT,"url not provided");
+		if (!d.containsKey(TiC.PROPERTY_URL)) {
+			Log.e(LCAT, "url not provided");
 			return false;
 		}
 		String url = TiConvert.toString(d.get(TiC.PROPERTY_URL));
 		String absUrl = resolveUrl(null, url);
-		ringtoneFile= TiFileFactory.createTitaniumFile(new String[] { absUrl }, false);
-	
-		String soundname = TiApplication.getInstance().getPackageName() + " ringtone";
-		if (d.containsKey(TiC.PROPERTY_TITLE)){
-			soundname = (String) d.get(TiC.PROPERTY_TITLE);
+		ringtoneFile = TiFileFactory.createTitaniumFile(
+				new String[] { absUrl }, false);
+
+		String soundName = TiApplication.getInstance().getPackageName()
+				+ " ringtone";
+		if (d.containsKey(TiC.PROPERTY_TITLE)) {
+			soundName = (String) d.get(TiC.PROPERTY_TITLE);
 		}
-		
+
 		ContentValues values = new ContentValues();
 		values.put(MediaStore.MediaColumns.DATA, ringtoneFile.nativePath());
 		values.put(MediaStore.MediaColumns.TITLE, getResString("app_name"));
@@ -91,19 +93,20 @@ public class TiringtonemanagerModule extends KrollModule {
 		values.put(MediaStore.Audio.Media.IS_NOTIFICATION, true);
 		values.put(MediaStore.Audio.Media.IS_ALARM, true);
 		values.put(MediaStore.Audio.Media.IS_MUSIC, true);
-
-		Uri uri = MediaStore.Audio.Media
-				.getContentUriForPath(ringtoneFile.nativePath());
-		Log.d(LCAT, uri.toString());
-		
+		Log.i(LCAT,
+				"the absolute path of the file is :"
+						+ ringtoneFile.nativePath());
+		Uri uri = MediaStore.Audio.Media.getContentUriForPath(ringtoneFile
+				.nativePath());
+	
 		Context context = TiApplication.getInstance().getApplicationContext();
 		Uri mUri = context.getContentResolver().insert(uri, values);
-		Log.d(LCAT, mUri.toString());
-
+		String ringtoneUri = mUri.toString();
+		Log.i(LCAT, "the ringtone uri is :" + ringtoneUri);
 		try {
 			RingtoneManager.setActualDefaultRingtoneUri(context,
 					RingtoneManager.TYPE_RINGTONE, mUri);
-			Log.e(LCAT, "RingtoneManagersetActualDefaultRingtoneUri SUCCESSFUL");
+			Log.i(LCAT, "RingtoneManagersetActualDefaultRingtoneUri SUCCESSFUL");
 		} catch (Exception e) {
 			Log.e(LCAT, "RingtoneManagersetActualDefaultRingtoneUri", e);
 		}
