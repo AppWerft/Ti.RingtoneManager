@@ -39,7 +39,7 @@ import android.support.v4.app.ActivityCompat;
 public class TiringtonemanagerModule extends KrollModule {
 
 	// Standard Debugging variables
-	private static final String LCAT = "TiringtonemanagerModule";
+	private static final String LCAT = "Tiringtone";
 	private static final boolean DBG = TiConfig.LOGD;
 	Activity currentActivity = TiApplication.getInstance().getCurrentActivity();
 
@@ -54,45 +54,49 @@ public class TiringtonemanagerModule extends KrollModule {
 
 	@Kroll.method
 	public void setActualDefaultRingtone(Object args) {
-		Context context = TiApplication.getInstance().getApplicationContext();
-		HashMap<String, String> d = (HashMap<String, String>) args;		
-		if (!d.containsKey(TiC.PROPERTY_URL)) {
+		/*
+		 * args are: url STRING title STRING
+		 */
+		Log.e(LCAT, args.toString());
+
+		HashMap<String, String> hashmap = (HashMap<String, String>) args;
+		if (!hashmap.containsKey(TiC.PROPERTY_URL)) {
 			Log.e(LCAT, "url not provided");
 			return;
 		}
-		String url = TiConvert.toString(d.get(TiC.PROPERTY_URL));
+		String url = TiConvert.toString(hashmap.get(TiC.PROPERTY_URL));
+		String title = "eigener Klingelton";
+		if (hashmap.containsKey("title")) {
+			title = hashmap.get("title");
+		}
 		String absUrl = resolveUrl(null, url);
-		Log.e(LCAT, absUrl);
+		
 
 		TiBaseFile file = TiFileFactory.createTitaniumFile(
 				new String[] { absUrl }, false);
-		
+
 		// http://www.programcreek.com/java-api-examples/index.php?source_dir=MicDroid-master/src/com/intervigil/micdroid/helper/MediaStoreHelper.java
-		
-		
+
 		ContentValues values = new ContentValues();
-		
+
 		values.put(MediaStore.MediaColumns.DATA, file.nativePath());
-		values.put(MediaStore.MediaColumns.TITLE, "Ringtone");
-		values.put(MediaStore.MediaColumns.SIZE,file.size()); // how can I
-															// determine?
+		Log.e(LCAT, file.nativePath());
+
+		values.put(MediaStore.MediaColumns.TITLE, title);
+		values.put(MediaStore.MediaColumns.SIZE, file.size());
 		values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp3");
 		values.put(MediaStore.Audio.Media.ARTIST, "NoArtist");
-		values.put(MediaStore.Audio.Media.DURATION, 230); // how can I
-															// determine?
+		values.put(MediaStore.Audio.Media.DURATION, 230);
 		values.put(MediaStore.Audio.Media.IS_RINGTONE, true);
 		values.put(MediaStore.Audio.Media.IS_NOTIFICATION, false);
 		values.put(MediaStore.Audio.Media.IS_ALARM, false);
 		values.put(MediaStore.Audio.Media.IS_MUSIC, false);
-		// Insert it into the database
+		// Insert it into the table files in sqlite
+		Context context = TiApplication.getInstance().getApplicationContext();
 		Uri uri = MediaStore.Audio.Media.getContentUriForPath(file.nativePath());
-			  Uri newUri = context.getContentResolver().insert(uri, values);
-			  RingtoneManager.setActualDefaultRingtoneUri(context,
-			      RingtoneManager.TYPE_RINGTONE, newUri);
-		
+		Uri ringUri = context.getContentResolver().insert(uri, values);
+		RingtoneManager.setActualDefaultRingtoneUri(context,RingtoneManager.TYPE_RINGTONE, ringUri);
 		// TODO return of success
-		
-		
-		
+
 	}
 }
