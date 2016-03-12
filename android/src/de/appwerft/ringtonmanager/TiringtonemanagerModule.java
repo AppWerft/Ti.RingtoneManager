@@ -64,31 +64,22 @@ public class TiringtonemanagerModule extends KrollModule {
 	}
 
 	@Kroll.method
-	public void setActualDefaultRingtone(Object args) {
-		/*
-		 * args are: url STRING title STRING
-		 */
-		Log.e(LCAT, args.toString());
-
-		HashMap<String, String> hashmap = (HashMap<String, String>) args;
-		if (!hashmap.containsKey(TiC.PROPERTY_URL)) {
-			Log.e(LCAT, "url not provided");
-			return;
+	public Boolean setActualDefaultRingtone(Object args) {
+		HashMap<String, String> d = (HashMap<String, String>) args;
+		final TiBaseFile file;
+		if (!d.containsKey(TiC.PROPERTY_URL)){
+			Log.e(LCAT,"url not provided");
+			return false;
 		}
-		String url = TiConvert.toString(hashmap.get(TiC.PROPERTY_URL));
-		String title = "eigener Klingelton";
-		if (hashmap.containsKey("title")) {
-			title = hashmap.get("title");
-		}
+		String url = TiConvert.toString(d.get(TiC.PROPERTY_URL));
 		String absUrl = resolveUrl(null, url);
-
-		TiBaseFile file = TiFileFactory.createTitaniumFile(
-				new String[] { absUrl }, false);
-
-		// http://www.programcreek.com/java-api-examples/index.php?source_dir=MicDroid-master/src/com/intervigil/micdroid/helper/MediaStoreHelper.java
-
-		Log.e(LCAT, file.nativePath());
-
+		file = TiFileFactory.createTitaniumFile(new String[] { absUrl }, false);
+	
+		String soundname = TiApplication.getInstance().getPackageName() + " ringtone";
+		if (d.containsKey(TiC.PROPERTY_TITLE)){
+			soundname = (String) d.get(TiC.PROPERTY_TITLE);
+		}
+		
 		ContentValues values = new ContentValues();
 		values.put(MediaStore.MediaColumns.DATA, file.nativePath());
 		values.put(MediaStore.MediaColumns.TITLE, getResString("app_name"));
@@ -101,40 +92,35 @@ public class TiringtonemanagerModule extends KrollModule {
 		values.put(MediaStore.Audio.Media.IS_NOTIFICATION, true);
 		values.put(MediaStore.Audio.Media.IS_ALARM, true);
 		values.put(MediaStore.Audio.Media.IS_MUSIC, true);
+
 		Uri uri = MediaStore.Audio.Media
 				.getContentUriForPath(file.nativePath());
+		Log.e(LCAT, uri.toString());
+		
 		Context context = TiApplication.getInstance().getApplicationContext();
-		ContentResolver mCr = context.getContentResolver();
-		Uri newUri = mCr.insert(uri, values);
+		Uri mUri = context.getContentResolver().insert(uri, values);
+		Log.e(LCAT, mUri.toString());
+
 		try {
 			RingtoneManager.setActualDefaultRingtoneUri(context,
-					RingtoneManager.TYPE_RINGTONE, newUri);
-			Settings.System.putString(mCr, Settings.System.RINGTONE,
-					newUri.toString());
-		} catch (Throwable t) {
-
-			// TODO Handle exception
+					RingtoneManager.TYPE_RINGTONE, mUri);
+			Log.e(LCAT, "RingtoneManagersetActualDefaultRingtoneUri SUCCESSFUL");
+		} catch (Exception e) {
+			Log.e(LCAT, "RingtoneManagersetActualDefaultRingtoneUri", e);
 		}
+
 		// Alternatives:
 		// http://stackoverflow.com/questions/17570636/how-to-set-mp3-as-ringtone
-		/*
-		 * 
-		 * Context context =
-		 * TiApplication.getInstance().getApplicationContext(); Uri uri =
-		 * MediaStore.Audio.Media.getContentUriForPath(file.nativePath()); Uri
-		 * ringUri = context.getContentResolver().insert(uri, values);
-		 * RingtoneManager
-		 * .setActualDefaultRingtoneUri(context,RingtoneManager.TYPE_RINGTONE,
-		 * ringUri);
-		 */
-		// TODO return of success
+
+		return true; // TODO return of success
 
 	}
 
 	@Kroll.method
 	public String getActualDefaultRingtone() {
 		Context context = TiApplication.getInstance().getApplicationContext();
-		Uri uri = RingtoneManager.getActualDefaultRingtoneUri(context,RingtoneManager.TYPE_RINGTONE);
+		Uri uri = RingtoneManager.getActualDefaultRingtoneUri(context,
+				RingtoneManager.TYPE_RINGTONE);
 		return uri.toString();
 	}
 }

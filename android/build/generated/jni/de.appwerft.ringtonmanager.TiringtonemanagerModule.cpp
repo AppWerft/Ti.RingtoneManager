@@ -89,8 +89,9 @@ Handle<FunctionTemplate> TiringtonemanagerModule::getProxyTemplate()
 	titanium::ProxyFactory::registerProxyPair(javaClass, *proxyTemplate);
 
 	// Method bindings --------------------------------------------------------
-	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "setActualDefaultRingtone", TiringtonemanagerModule::setActualDefaultRingtone);
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "getActualDefaultRingtone", TiringtonemanagerModule::getActualDefaultRingtone);
+	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "setActualDefaultRingtone", TiringtonemanagerModule::setActualDefaultRingtone);
+	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "getActualDefaultRingtoneUri", TiringtonemanagerModule::getActualDefaultRingtoneUri);
 
 	Local<ObjectTemplate> prototypeTemplate = proxyTemplate->PrototypeTemplate();
 	Local<ObjectTemplate> instanceTemplate = proxyTemplate->InstanceTemplate();
@@ -109,6 +110,58 @@ Handle<FunctionTemplate> TiringtonemanagerModule::getProxyTemplate()
 }
 
 // Methods --------------------------------------------------------------------
+Handle<Value> TiringtonemanagerModule::getActualDefaultRingtone(const Arguments& args)
+{
+	LOGD(TAG, "getActualDefaultRingtone()");
+	HandleScope scope;
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		return titanium::JSException::GetJNIEnvironmentError();
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(TiringtonemanagerModule::javaClass, "getActualDefaultRingtone", "()Ljava/lang/String;");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'getActualDefaultRingtone' with signature '()Ljava/lang/String;'";
+			LOGE(TAG, error);
+				return titanium::JSException::Error(error);
+		}
+	}
+
+	titanium::Proxy* proxy = titanium::Proxy::unwrap(args.Holder());
+
+	jvalue* jArguments = 0;
+
+	jobject javaProxy = proxy->getJavaObject();
+	jstring jResult = (jstring)env->CallObjectMethodA(javaProxy, methodID, jArguments);
+
+
+
+	if (!JavaObject::useGlobalRefs) {
+		env->DeleteLocalRef(javaProxy);
+	}
+
+
+
+	if (env->ExceptionCheck()) {
+		Handle<Value> jsException = titanium::JSException::fromJavaException();
+		env->ExceptionClear();
+		return jsException;
+	}
+
+	if (jResult == NULL) {
+		return Null();
+	}
+
+	Handle<Value> v8Result = titanium::TypeConverter::javaStringToJsString(env, jResult);
+
+	env->DeleteLocalRef(jResult);
+
+
+	return v8Result;
+
+}
 Handle<Value> TiringtonemanagerModule::setActualDefaultRingtone(const Arguments& args)
 {
 	LOGD(TAG, "setActualDefaultRingtone()");
@@ -120,9 +173,9 @@ Handle<Value> TiringtonemanagerModule::setActualDefaultRingtone(const Arguments&
 	}
 	static jmethodID methodID = NULL;
 	if (!methodID) {
-		methodID = env->GetMethodID(TiringtonemanagerModule::javaClass, "setActualDefaultRingtone", "(Ljava/lang/Object;)V");
+		methodID = env->GetMethodID(TiringtonemanagerModule::javaClass, "setActualDefaultRingtone", "(Ljava/lang/Object;)Ljava/lang/Boolean;");
 		if (!methodID) {
-			const char *error = "Couldn't find proxy method 'setActualDefaultRingtone' with signature '(Ljava/lang/Object;)V'";
+			const char *error = "Couldn't find proxy method 'setActualDefaultRingtone' with signature '(Ljava/lang/Object;)Ljava/lang/Boolean;'";
 			LOGE(TAG, error);
 				return titanium::JSException::Error(error);
 		}
@@ -152,7 +205,9 @@ Handle<Value> TiringtonemanagerModule::setActualDefaultRingtone(const Arguments&
 	}
 
 	jobject javaProxy = proxy->getJavaObject();
-	env->CallVoidMethodA(javaProxy, methodID, jArguments);
+	jobject jResult = (jobject)env->CallObjectMethodA(javaProxy, methodID, jArguments);
+
+
 
 	if (!JavaObject::useGlobalRefs) {
 		env->DeleteLocalRef(javaProxy);
@@ -166,19 +221,26 @@ Handle<Value> TiringtonemanagerModule::setActualDefaultRingtone(const Arguments&
 
 
 	if (env->ExceptionCheck()) {
-		titanium::JSException::fromJavaException();
+		Handle<Value> jsException = titanium::JSException::fromJavaException();
 		env->ExceptionClear();
+		return jsException;
 	}
 
+	if (jResult == NULL) {
+		return Null();
+	}
+
+	Handle<Value> v8Result = titanium::TypeConverter::javaObjectToJsValue(env, jResult);
+
+	env->DeleteLocalRef(jResult);
 
 
-
-	return v8::Undefined();
+	return v8Result;
 
 }
-Handle<Value> TiringtonemanagerModule::getActualDefaultRingtone(const Arguments& args)
+Handle<Value> TiringtonemanagerModule::getActualDefaultRingtoneUri(const Arguments& args)
 {
-	LOGD(TAG, "getActualDefaultRingtone()");
+	LOGD(TAG, "getActualDefaultRingtoneUri()");
 	HandleScope scope;
 
 	JNIEnv *env = titanium::JNIScope::getEnv();
@@ -187,9 +249,9 @@ Handle<Value> TiringtonemanagerModule::getActualDefaultRingtone(const Arguments&
 	}
 	static jmethodID methodID = NULL;
 	if (!methodID) {
-		methodID = env->GetMethodID(TiringtonemanagerModule::javaClass, "getActualDefaultRingtone", "()Ljava/lang/String;");
+		methodID = env->GetMethodID(TiringtonemanagerModule::javaClass, "getActualDefaultRingtoneUri", "()Ljava/lang/String;");
 		if (!methodID) {
-			const char *error = "Couldn't find proxy method 'getActualDefaultRingtone' with signature '()Ljava/lang/String;'";
+			const char *error = "Couldn't find proxy method 'getActualDefaultRingtoneUri' with signature '()Ljava/lang/String;'";
 			LOGE(TAG, error);
 				return titanium::JSException::Error(error);
 		}
