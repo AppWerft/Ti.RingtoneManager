@@ -71,11 +71,13 @@ public class TiringtonemanagerModule extends KrollModule {
 			Log.e(LCAT, "url not provided");
 			return false;
 		}
-		
-		String absUrl = resolveUrl(null, TiConvert.toString(d.get(TiC.PROPERTY_URL)));
+
+		String absUrl = resolveUrl(null,
+				TiConvert.toString(d.get(TiC.PROPERTY_URL)));
 		ringtoneFile = TiFileFactory.createTitaniumFile(
 				new String[] { absUrl }, false);
-		String soundName = TiApplication.getInstance().getPackageName()+ " ringtone";
+			String soundName = TiApplication.getInstance().getPackageName()
+					+ " ringtone";
 		if (d.containsKey(TiC.PROPERTY_TITLE)) {
 			soundName = (String) d.get(TiC.PROPERTY_TITLE);
 		}
@@ -95,15 +97,15 @@ public class TiringtonemanagerModule extends KrollModule {
 		Log.i(LCAT,
 				"the absolute path of the file is :"
 						+ ringtoneFile.nativePath());
-		Log.i(LCAT,
-				"the soundName :"
-						+ soundName);
+		/* file:///storage/emulated/0/de.appwerft.tierstimmenarchiv/Ochotona_curzoniae_S1439_08.mp3 */
+		Log.i(LCAT, "the soundName :" + soundName);
 		Uri uri = MediaStore.Audio.Media.getContentUriForPath(ringtoneFile
 				.nativePath());
 		Context context = TiApplication.getInstance().getApplicationContext();
 		Uri mUri = context.getContentResolver().insert(uri, values);
 		String ringtoneUri = mUri.toString();
 		Log.i(LCAT, "the ringtone uri is :" + ringtoneUri);
+		/* content://media/internal/audio/media/274 */
 		try {
 			RingtoneManager.setActualDefaultRingtoneUri(context,
 					RingtoneManager.TYPE_RINGTONE, mUri);
@@ -127,3 +129,13 @@ public class TiringtonemanagerModule extends KrollModule {
 		return uri.toString();
 	}
 }
+
+
+/*
+ * 
+ After callin come son console:
+ 
+W/Ringtone( 3873): Neither local nor remote playback available
+W/Ringtone( 3873): not playing fallback for content://media/internal/audio/media/274
+ 
+ */
