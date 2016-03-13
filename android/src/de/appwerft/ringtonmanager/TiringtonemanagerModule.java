@@ -84,6 +84,10 @@ public class TiringtonemanagerModule extends KrollModule {
 		if (d.containsKey(TiC.PROPERTY_TITLE)) {
 			soundName = (String) d.get(TiC.PROPERTY_TITLE);
 		}
+
+		/* getting context for next actions */
+		Context context = TiApplication.getInstance().getApplicationContext();
+
 		// see
 		// http://stackoverflow.com/questions/18100885/set-raw-resource-as-ringtone-in-android
 		ContentValues values = new ContentValues();
@@ -96,28 +100,18 @@ public class TiringtonemanagerModule extends KrollModule {
 		values.put(MediaStore.Audio.Media.IS_RINGTONE, true);
 		values.put(MediaStore.Audio.Media.IS_NOTIFICATION, true);
 		values.put(MediaStore.Audio.Media.IS_ALARM, true);
-		values.put(MediaStore.Audio.Media.IS_MUSIC, true);
+		values.put(MediaStore.Audio.Media.IS_MUSIC, false);
 
 		Log.i(LCAT,
 				"the absolute path of the file is :"
 						+ ringtoneFile.nativePath());
-		/*
-		 * file:///storage/emulated/0/de.appwerft.tierstimmenarchiv/
-		 * Ochotona_curzoniae_S1439_08.mp3
-		 */
-		Log.i(LCAT, "the soundName :" + soundName);
-		Uri uri = MediaStore.Audio.Media.getContentUriForPath(ringtoneFile
-				.nativePath());
-		Context context = TiApplication.getInstance().getApplicationContext();
-		ContentResolver mCr = context.getContentResolver();
-		mCr.delete(
-				uri,
-				MediaStore.MediaColumns.DATA + "=\""
-						+ ringtoneFile.nativePath() + "\"", null);
-		Uri mUri = mCr.insert(uri, values);
-		String ringtoneUri = mUri.toString();
-		Log.i(LCAT, "the ringtone uri is :" + ringtoneUri);
-		/* content://media/internal/audio/media/274 */
+
+		/* Inserts a row into a table at the given URL. */
+		Uri mUri = context.getContentResolver().insert(
+				MediaStore.Audio.Media.getContentUriForPath(ringtoneFile
+						.nativePath()), values);
+		Log.i(LCAT, "the ringtone uri is :" + mUri.toString()); //content://media/internal/audio/media/274 
+		
 		try {
 			RingtoneManager.setActualDefaultRingtoneUri(context,
 					RingtoneManager.TYPE_RINGTONE, mUri);
