@@ -89,7 +89,9 @@ Handle<FunctionTemplate> TiringtonemanagerModule::getProxyTemplate()
 	titanium::ProxyFactory::registerProxyPair(javaClass, *proxyTemplate);
 
 	// Method bindings --------------------------------------------------------
+	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "getDefaultUri", TiringtonemanagerModule::getDefaultUri);
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "getActualDefaultRingtone", TiringtonemanagerModule::getActualDefaultRingtone);
+	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "getCurrentRingtone", TiringtonemanagerModule::getCurrentRingtone);
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "setActualDefaultRingtone", TiringtonemanagerModule::setActualDefaultRingtone);
 	DEFINE_PROTOTYPE_METHOD(proxyTemplate, "getActualDefaultRingtoneUri", TiringtonemanagerModule::getActualDefaultRingtoneUri);
 
@@ -110,6 +112,58 @@ Handle<FunctionTemplate> TiringtonemanagerModule::getProxyTemplate()
 }
 
 // Methods --------------------------------------------------------------------
+Handle<Value> TiringtonemanagerModule::getDefaultUri(const Arguments& args)
+{
+	LOGD(TAG, "getDefaultUri()");
+	HandleScope scope;
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		return titanium::JSException::GetJNIEnvironmentError();
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(TiringtonemanagerModule::javaClass, "getDefaultUri", "()Ljava/lang/String;");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'getDefaultUri' with signature '()Ljava/lang/String;'";
+			LOGE(TAG, error);
+				return titanium::JSException::Error(error);
+		}
+	}
+
+	titanium::Proxy* proxy = titanium::Proxy::unwrap(args.Holder());
+
+	jvalue* jArguments = 0;
+
+	jobject javaProxy = proxy->getJavaObject();
+	jstring jResult = (jstring)env->CallObjectMethodA(javaProxy, methodID, jArguments);
+
+
+
+	if (!JavaObject::useGlobalRefs) {
+		env->DeleteLocalRef(javaProxy);
+	}
+
+
+
+	if (env->ExceptionCheck()) {
+		Handle<Value> jsException = titanium::JSException::fromJavaException();
+		env->ExceptionClear();
+		return jsException;
+	}
+
+	if (jResult == NULL) {
+		return Null();
+	}
+
+	Handle<Value> v8Result = titanium::TypeConverter::javaStringToJsString(env, jResult);
+
+	env->DeleteLocalRef(jResult);
+
+
+	return v8Result;
+
+}
 Handle<Value> TiringtonemanagerModule::getActualDefaultRingtone(const Arguments& args)
 {
 	LOGD(TAG, "getActualDefaultRingtone()");
@@ -124,6 +178,58 @@ Handle<Value> TiringtonemanagerModule::getActualDefaultRingtone(const Arguments&
 		methodID = env->GetMethodID(TiringtonemanagerModule::javaClass, "getActualDefaultRingtone", "()Ljava/lang/String;");
 		if (!methodID) {
 			const char *error = "Couldn't find proxy method 'getActualDefaultRingtone' with signature '()Ljava/lang/String;'";
+			LOGE(TAG, error);
+				return titanium::JSException::Error(error);
+		}
+	}
+
+	titanium::Proxy* proxy = titanium::Proxy::unwrap(args.Holder());
+
+	jvalue* jArguments = 0;
+
+	jobject javaProxy = proxy->getJavaObject();
+	jstring jResult = (jstring)env->CallObjectMethodA(javaProxy, methodID, jArguments);
+
+
+
+	if (!JavaObject::useGlobalRefs) {
+		env->DeleteLocalRef(javaProxy);
+	}
+
+
+
+	if (env->ExceptionCheck()) {
+		Handle<Value> jsException = titanium::JSException::fromJavaException();
+		env->ExceptionClear();
+		return jsException;
+	}
+
+	if (jResult == NULL) {
+		return Null();
+	}
+
+	Handle<Value> v8Result = titanium::TypeConverter::javaStringToJsString(env, jResult);
+
+	env->DeleteLocalRef(jResult);
+
+
+	return v8Result;
+
+}
+Handle<Value> TiringtonemanagerModule::getCurrentRingtone(const Arguments& args)
+{
+	LOGD(TAG, "getCurrentRingtone()");
+	HandleScope scope;
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		return titanium::JSException::GetJNIEnvironmentError();
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(TiringtonemanagerModule::javaClass, "getCurrentRingtone", "()Ljava/lang/String;");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'getCurrentRingtone' with signature '()Ljava/lang/String;'";
 			LOGE(TAG, error);
 				return titanium::JSException::Error(error);
 		}

@@ -27,6 +27,8 @@ import android.provider.MediaStore;
 import android.provider.MediaStore.MediaColumns;
 import android.net.Uri;
 import android.media.RingtoneManager;
+import android.media.Ringtone;
+import android.media.AudioAttributes;
 import android.widget.Toast;
 import android.content.Context;
 
@@ -76,8 +78,8 @@ public class TiringtonemanagerModule extends KrollModule {
 				TiConvert.toString(d.get(TiC.PROPERTY_URL)));
 		ringtoneFile = TiFileFactory.createTitaniumFile(
 				new String[] { absUrl }, false);
-			String soundName = TiApplication.getInstance().getPackageName()
-					+ " ringtone";
+		String soundName = TiApplication.getInstance().getPackageName()
+				+ " ringtone";
 		if (d.containsKey(TiC.PROPERTY_TITLE)) {
 			soundName = (String) d.get(TiC.PROPERTY_TITLE);
 		}
@@ -97,7 +99,10 @@ public class TiringtonemanagerModule extends KrollModule {
 		Log.i(LCAT,
 				"the absolute path of the file is :"
 						+ ringtoneFile.nativePath());
-		/* file:///storage/emulated/0/de.appwerft.tierstimmenarchiv/Ochotona_curzoniae_S1439_08.mp3 */
+		/*
+		 * file:///storage/emulated/0/de.appwerft.tierstimmenarchiv/
+		 * Ochotona_curzoniae_S1439_08.mp3
+		 */
 		Log.i(LCAT, "the soundName :" + soundName);
 		Uri uri = MediaStore.Audio.Media.getContentUriForPath(ringtoneFile
 				.nativePath());
@@ -122,20 +127,28 @@ public class TiringtonemanagerModule extends KrollModule {
 	}
 
 	@Kroll.method
-	public String getActualDefaultRingtone() {
+	public String getDefaultUri() {
 		Context context = TiApplication.getInstance().getApplicationContext();
-		Uri uri = RingtoneManager.getActualDefaultRingtoneUri(context,
-				RingtoneManager.TYPE_RINGTONE);
+		Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 		return uri.toString();
+	}
+
+	@Kroll.method
+	public String getCurrentRingtone() {
+		Context context = TiApplication.getInstance().getApplicationContext();
+		Uri currentRingtoneUri = RingtoneManager.getActualDefaultRingtoneUri(
+				context, RingtoneManager.TYPE_RINGTONE);
+		Ringtone currentRingtone = RingtoneManager.getRingtone(context,
+				currentRingtoneUri);
+		String title = currentRingtone.getTitle(context);
+		return title;
 	}
 }
 
-
 /*
  * 
- After callin come son console:
- 
-W/Ringtone( 3873): Neither local nor remote playback available
-W/Ringtone( 3873): not playing fallback for content://media/internal/audio/media/274
- 
+ * After calling comes on console:
+ * 
+ * W/Ringtone( 3873): Neither local nor remote playback available W/Ringtone(
+ * 3873): not playing fallback for content://media/internal/audio/media/274
  */
