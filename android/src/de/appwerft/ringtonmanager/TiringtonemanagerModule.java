@@ -25,6 +25,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.provider.MediaStore;
 import android.provider.MediaStore.MediaColumns;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.media.RingtoneManager;
 import android.media.Ringtone;
@@ -83,14 +84,15 @@ public class TiringtonemanagerModule extends KrollModule {
 		if (d.containsKey(TiC.PROPERTY_TITLE)) {
 			soundName = (String) d.get(TiC.PROPERTY_TITLE);
 		}
-
+		// see
+		// http://stackoverflow.com/questions/18100885/set-raw-resource-as-ringtone-in-android
 		ContentValues values = new ContentValues();
 		values.put(MediaStore.MediaColumns.DATA, ringtoneFile.nativePath());
 		values.put(MediaStore.MediaColumns.TITLE, soundName);
 		values.put(MediaStore.MediaColumns.SIZE, ringtoneFile.size());
 		values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp3");
 		values.put(MediaStore.Audio.Media.ARTIST, "NoArtist");
-		values.put(MediaStore.Audio.Media.DURATION, 20230);
+		values.put(MediaStore.Audio.Media.DURATION, 20000);
 		values.put(MediaStore.Audio.Media.IS_RINGTONE, true);
 		values.put(MediaStore.Audio.Media.IS_NOTIFICATION, true);
 		values.put(MediaStore.Audio.Media.IS_ALARM, true);
@@ -107,7 +109,12 @@ public class TiringtonemanagerModule extends KrollModule {
 		Uri uri = MediaStore.Audio.Media.getContentUriForPath(ringtoneFile
 				.nativePath());
 		Context context = TiApplication.getInstance().getApplicationContext();
-		Uri mUri = context.getContentResolver().insert(uri, values);
+		ContentResolver mCr = context.getContentResolver();
+		mCr.delete(
+				uri,
+				MediaStore.MediaColumns.DATA + "=\""
+						+ ringtoneFile.nativePath() + "\"", null);
+		Uri mUri = mCr.insert(uri, values);
 		String ringtoneUri = mUri.toString();
 		Log.i(LCAT, "the ringtone uri is :" + ringtoneUri);
 		/* content://media/internal/audio/media/274 */
