@@ -2,10 +2,8 @@
  *
  */
 package de.appwerft.ringtonmanager;
-
 import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
-
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiConfig;
@@ -13,9 +11,6 @@ import org.appcelerator.titanium.io.TiBaseFile;
 import org.appcelerator.titanium.io.TiFileFactory;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.util.TiConvert;
-import org.appcelerator.titanium.util.TiRHelper;
-import org.appcelerator.titanium.util.TiRHelper.ResourceNotFoundException;
-
 import android.app.Activity;
 import android.os.Build;
 import java.io.File;
@@ -30,20 +25,15 @@ import android.net.Uri;
 import android.media.RingtoneManager;
 import android.media.Ringtone;
 import android.media.AudioAttributes;
-import android.widget.Toast;
 import android.content.Context;
 import android.provider.Settings.NameValueTable;
-
 import android.provider.Settings;
 import android.provider.Settings.System;
 import android.content.Intent;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.app.ActivityCompat;
-import android.content.pm.PackageManager;
-import android.Manifest;
 import android.app.Activity;
 
-//import android.content.pm.PackageManager;
 
 @Kroll.module(name = "Tiringtonemanager", id = "de.appwerft.ringtonmanager")
 public class TiringtonemanagerModule extends KrollModule {
@@ -68,9 +58,7 @@ public class TiringtonemanagerModule extends KrollModule {
 		final int NOTIFY_CODE = 999;
 		if (!d.containsKey(TiC.PROPERTY_URL)) {
 			Log.e(LCAT, "url not provided");
-
 		}
-
 		String absUrl = resolveUrl(null,
 				TiConvert.toString(d.get(TiC.PROPERTY_URL)));
 		ringtoneFile = TiFileFactory.createTitaniumFile(
@@ -80,29 +68,22 @@ public class TiringtonemanagerModule extends KrollModule {
 		if (d.containsKey(TiC.PROPERTY_TITLE)) {
 			soundName = (String) d.get(TiC.PROPERTY_TITLE);
 		}
-
 		Context context = TiApplication.getInstance().getApplicationContext();
-
-		// see
 		// http://stackoverflow.com/questions/18100885/set-raw-resource-as-ringtone-in-android
-		ContentValues values = new ContentValues();
-		values.put(MediaStore.MediaColumns.DATA, absUrl);
-		values.put(MediaStore.MediaColumns.TITLE, soundName);
-		values.put(MediaStore.MediaColumns.SIZE, ringtoneFile.size());
-		values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/*");
-		values.put(MediaStore.Audio.Media.IS_RINGTONE, true);
-		values.put(MediaStore.Audio.Media.IS_NOTIFICATION, false);
-		values.put(MediaStore.Audio.Media.IS_ALARM, false);
-		values.put(MediaStore.Audio.Media.IS_MUSIC, false);
-
+		ContentValues content = new ContentValues();
+		content.put(MediaStore.MediaColumns.DATA, absUrl);
+		content.put(MediaStore.MediaColumns.TITLE, soundName);
+		content.put(MediaStore.MediaColumns.SIZE, ringtoneFile.size());
+		content.put(MediaStore.MediaColumns.MIME_TYPE, "audio/*");
+		content.put(MediaStore.Audio.Media.IS_RINGTONE, true);
+		content.put(MediaStore.Audio.Media.IS_NOTIFICATION, false);
+		content.put(MediaStore.Audio.Media.IS_ALARM, false);
+		content.put(MediaStore.Audio.Media.IS_MUSIC, false);
 		Log.i(LCAT, "nativePath=" + ringtoneFile.nativePath());
-
-		Uri mUri = context.getContentResolver().insert(
-				MediaStore.Audio.Media.getContentUriForPath(ringtoneFile
-						.nativePath()), values);
-
+		Uri uri = MediaStore.Audio.Media.getContentUriForPath(ringtoneFile
+				.nativePath());
+		Uri mUri = context.getContentResolver().insert(uri, content);
 		Log.i(LCAT, "The new ringtone is =" + soundName); // content://media/internal/audio/media/274
-
 		Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE,
 				"Bestätige jetzt „" + soundName + "“");
@@ -113,42 +94,5 @@ public class TiringtonemanagerModule extends KrollModule {
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, mUri);
 		TiApplication.getInstance().getCurrentActivity()
 				.startActivityForResult(intent, NOTIFY_CODE);
-
-	}
-
-	/*
-	 * @Override protected void onActivityResult(final int requestCode, final
-	 * int resultCode, final Intent intent) { if (resultCode ==
-	 * Activity.RESULT_OK && requestCode == NOTIFY_CODE) { Uri uri =
-	 * intent.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-	 * 
-	 * if (uri != null) { this.chosenRingtone = uri.toString(); } else {
-	 * this.chosenRingtone = null; } } }
-	 */
-
-	@Kroll.method
-	public String getDefaultUri() {
-		Context context = TiApplication.getInstance().getApplicationContext();
-		Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-		return uri.toString();
-	}
-
-	@Kroll.method
-	public String getCurrentRingtone() {
-		Context context = TiApplication.getInstance().getApplicationContext();
-		Uri currentRingtoneUri = RingtoneManager.getActualDefaultRingtoneUri(
-				context, RingtoneManager.TYPE_RINGTONE);
-		Ringtone currentRingtone = RingtoneManager.getRingtone(context,
-				currentRingtoneUri);
-		String title = currentRingtone.getTitle(context);
-		return title;
 	}
 }
-
-/*
- * 
- * After calling comes on console:
- * 
- * W/Ringtone( 3873): Neither local nor remote playback available W/Ringtone(
- * 3873): not playing fallback for content://media/internal/audio/media/274
- */
