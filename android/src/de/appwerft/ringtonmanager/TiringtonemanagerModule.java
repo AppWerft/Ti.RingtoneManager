@@ -30,17 +30,12 @@ import android.net.Uri;
 import android.media.RingtoneManager;
 import android.media.Ringtone;
 import android.media.AudioAttributes;
-import android.widget.Toast;
 import android.content.Context;
-import android.provider.Settings.NameValueTable;
 
-import android.provider.Settings;
-import android.provider.Settings.System;
 import android.content.Intent;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.app.ActivityCompat;
 import android.content.pm.PackageManager;
-import android.Manifest;
 import android.app.Activity;
 
 //import android.content.pm.PackageManager;
@@ -56,43 +51,6 @@ public class TiringtonemanagerModule extends KrollModule {
 		super();
 	}
 
-	/*
-	 * private Boolean showPermissionsDialog() { if (Build.VERSION.SDK_INT ==
-	 * 23) { Context context =
-	 * TiApplication.getInstance().getApplicationContext(); Activity activity =
-	 * TiApplication.getInstance().getCurrentActivity();
-	 * 
-	 * Log.d(LCAT, "SDK=23"); int hasWriteSettingsPermission =
-	 * ContextCompat.checkSelfPermission
-	 * (context,Manifest.permission.WRITE_SETTINGS); if
-	 * (hasWriteSettingsPermission != PackageManager.PERMISSION_GRANTED) { //
-	 * You can skip the next if block. I use it to explain to user // why I wan
-	 * his permission. if (!ActivityCompat.shouldShowRequestPermissionRationale(
-	 * activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
-	 * showMessageOKCancel("You need to allow write settings", new
-	 * DialogInterface.OnClickListener() {
-	 * 
-	 * @Override public void onClick(DialogInterface dialog, int which) {
-	 * ActivityCompat .requestPermissions( activity, new String[] {
-	 * Manifest.permission.WRITE_SETTINGS }, WRITE_PERMISSION_REQUEST); } });
-	 * return true; } // The next line causes a dialog to popup, asking the user
-	 * to // allow or deny us write permission
-	 * ActivityCompat.requestPermissions(HomeActivity.this, new String[] {
-	 * Manifest.permission.WRITE_SETTINGS }, WRITE_PERMISSION_REQUEST); return
-	 * true; } else { return true; // Permissions have already been granted. Do
-	 * whatever you want // :) } } else { Log.d(LCAT, "SDK != 23"); return true;
-	 * } }
-	 */
-
-	public static int getResString(String str) {
-		try {
-			return TiRHelper.getApplicationResource("string." + str);
-		} catch (ResourceNotFoundException e) {
-			e.printStackTrace();
-			return 0;
-		}
-	}
-
 	@Kroll.onAppCreate
 	public static void onAppCreate(TiApplication app) {
 		Log.d(LCAT, "inside onAppCreate");
@@ -102,12 +60,11 @@ public class TiringtonemanagerModule extends KrollModule {
 	public void setActualDefaultRingtone(Object args) {
 		HashMap<String, String> d = (HashMap<String, String>) args;
 		final TiBaseFile ringtoneFile;
-		final int NOTIFY_CODE=999;
+		final int NOTIFY_CODE = 999;
 		if (!d.containsKey(TiC.PROPERTY_URL)) {
 			Log.e(LCAT, "url not provided");
-			
-		}
 
+		}
 		String absUrl = resolveUrl(null,
 				TiConvert.toString(d.get(TiC.PROPERTY_URL)));
 		ringtoneFile = TiFileFactory.createTitaniumFile(
@@ -120,8 +77,7 @@ public class TiringtonemanagerModule extends KrollModule {
 
 		Context context = TiApplication.getInstance().getApplicationContext();
 
-		// see
-		// http://stackoverflow.com/questions/18100885/set-raw-resource-as-ringtone-in-android
+		/* we feed a ContentValue */
 		ContentValues values = new ContentValues();
 		values.put(MediaStore.MediaColumns.DATA, absUrl);
 		values.put(MediaStore.MediaColumns.TITLE, soundName);
@@ -132,48 +88,34 @@ public class TiringtonemanagerModule extends KrollModule {
 		values.put(MediaStore.Audio.Media.IS_ALARM, false);
 		values.put(MediaStore.Audio.Media.IS_MUSIC, false);
 
-		Log.i(LCAT,
-				"the absolute path of the file is :"
-						+ ringtoneFile.nativePath());
-
+		/* insert of ContentValue into ContentProvider */
 		Uri mUri = context.getContentResolver().insert(
 				MediaStore.Audio.Media.getContentUriForPath(ringtoneFile
 						.nativePath()), values);
-
-		Log.i(LCAT, "The new ringtone is :\n" + soundName); // content://media/internal/audio/media/274
 		
-		 Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
-         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Bestätige jetzt „"+ soundName+ "“");
-         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
-         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
-         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE,RingtoneManager.TYPE_RINGTONE);
-         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, mUri);
-         TiApplication.getInstance().getCurrentActivity().startActivityForResult( intent,NOTIFY_CODE);
-         
-         
-         
-         
-         
-         
-	}
-	/*
-	@Override
-    protected void onActivityResult(final int requestCode, final int resultCode, final Intent intent)
-    {
-        if (resultCode == Activity.RESULT_OK && requestCode == NOTIFY_CODE)
-        {
-             Uri uri = intent.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+		/* Calling intent to insert new ringtone */
+		Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE,
+				"Bestätige jetzt „" + soundName + "“");
+		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
+		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
+		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE,
+				RingtoneManager.TYPE_NOTIFICATION);
+		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, mUri);
+		TiApplication.getInstance().getCurrentActivity()
+				.startActivityForResult(intent, NOTIFY_CODE);
 
-             if (uri != null)
-             {
-                 this.chosenRingtone = uri.toString();
-             }
-             else
-             {
-                 this.chosenRingtone = null;
-             }
-         }            
-     }*/
+	}
+
+	/*
+	 * @Override protected void onActivityResult(final int requestCode, final
+	 * int resultCode, final Intent intent) { if (resultCode ==
+	 * Activity.RESULT_OK && requestCode == NOTIFY_CODE) { Uri uri =
+	 * intent.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+	 * 
+	 * if (uri != null) { this.chosenRingtone = uri.toString(); } else {
+	 * this.chosenRingtone = null; } } }
+	 */
 
 	@Kroll.method
 	public String getDefaultUri() {
