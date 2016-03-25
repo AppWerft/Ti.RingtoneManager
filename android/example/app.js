@@ -12,28 +12,18 @@ var label = Ti.UI.createLabel();
 win.add(label);
 win.open();
 
-// TODO: write your module tests here
-var tiringtonemanager = require('de.appwerft.ringtonmanager');
-Ti.API.info("module is => " + tiringtonemanager);
+var RingTone = require('de.appwerft.ringtonmanager');
+var xhr = Ti.Network.createHTTPClient({
+		onload : function() {
+			var soundfile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, 'ringtones', 'sound.mp3');
+			soundfile.write(this.responseData);
+			RingTone.setActualDefaultRingtone({
+				url : soundfile.nativePath,
+				title : 'Aegyptisches_Dendrawahuhn'
+			});
 
-label.text = tiringtonemanager.example();
-
-Ti.API.info("module exampleProp is => " + tiringtonemanager.exampleProp);
-tiringtonemanager.exampleProp = "This is a test value";
-
-if (Ti.Platform.name == "android") {
-	var proxy = tiringtonemanager.createExample({
-		message: "Creating an example Proxy",
-		backgroundColor: "red",
-		width: 100,
-		height: 100,
-		top: 100,
-		left: 150
+		}
 	});
-
-	proxy.printMessage("Hello world!");
-	proxy.message = "Hi world!.  It's me again.";
-	proxy.printMessage("Hello world!");
-	win.add(proxy);
-}
+	xhr.open('GET', 'http://www.tierstimmenarchiv.de/recordings/0008_Aegyptisches_Dendrawahuhn_short.mp3');  // from http://www.tierstimmenarchiv.de/recordings/
+	xhr.send();
 
