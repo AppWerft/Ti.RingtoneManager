@@ -15,6 +15,7 @@ import org.appcelerator.titanium.util.TiConvert;
 import android.app.Activity;
 import android.os.Build;
 import java.io.File;
+import android.os.Build;
 import java.util.HashMap;
 import android.content.ContentValues;
 import android.content.ContentResolver;
@@ -101,33 +102,36 @@ public class TiringtonemanagerModule extends KrollModule {
 				MediaStore.MediaColumns.DATA + "=\""
 						+ ringtoneFile.nativePath() + "\"", null);
 		Uri mUri = mCr.insert(uri, values);
-		
-		Log.i(LCAT, "the ringtone uri is :" + mUri.toString());
-		
-		/*
-		try {
-			RingtoneManager.setActualDefaultRingtoneUri(context,
-					RingtoneManager.TYPE_RINGTONE, mUri);
-			Log.i(LCAT, "RingtoneManagersetActualDefaultRingtoneUri SUCCESSFUL");
-		} catch (Exception e) {
-			Log.e(LCAT, "RingtoneManagersetActualDefaultRingtoneUri", e);
-		}
 
-		// Alternatives:
-		// http://stackoverflow.com/questions/17570636/how-to-set-mp3-as-ringtone
-		
-		return true; // TODO return of success
-		*/
-		Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
-		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE,
-				"Bestätige jetzt „" + soundName + "“");
-		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
-		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
-		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE,
-				RingtoneManager.TYPE_RINGTONE);
-		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, mUri);
-		TiApplication.getInstance().getCurrentActivity()
-				.startActivityForResult(intent, 999);
+		Log.i(LCAT, "the ringtone uri is :" + mUri.toString());
+
+		if (Build.VERSION.SDK_INT < 23) {
+
+			try {
+				RingtoneManager.setActualDefaultRingtoneUri(context,
+						RingtoneManager.TYPE_RINGTONE, mUri);
+				Log.i(LCAT,
+						"RingtoneManagersetActualDefaultRingtoneUri SUCCESSFUL");
+			} catch (Exception e) {
+				Log.e(LCAT, "RingtoneManagersetActualDefaultRingtoneUri", e);
+			}
+
+			// Alternatives:
+			// http://stackoverflow.com/questions/17570636/how-to-set-mp3-as-ringtone
+
+		} else {
+
+			Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE,
+					"Bestätige jetzt „" + soundName + "“");
+			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
+			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
+			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE,
+					RingtoneManager.TYPE_RINGTONE);
+			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, mUri);
+			TiApplication.getInstance().getCurrentActivity()
+					.startActivityForResult(intent, 999);
+		}
 		return true;
 	}
 }
