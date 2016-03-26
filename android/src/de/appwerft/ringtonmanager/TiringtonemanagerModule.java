@@ -61,20 +61,15 @@ public class TiringtonemanagerModule extends KrollModule {
 			Log.e(LCAT, "url not provided");
 			return false;
 		}
-
 		String absUrl = resolveUrl(null,
 				TiConvert.toString(d.get(TiC.PROPERTY_URL)));
-		ringtoneFile = TiFileFactory.createTitaniumFile(
-				new String[] { absUrl }, false);
+		
 		String soundName = TiApplication.getInstance().getPackageName()
 				+ " ringtone";
 		if (d.containsKey(TiC.PROPERTY_TITLE)) {
 			soundName = (String) d.get(TiC.PROPERTY_TITLE);
 		}
 		String nativePath = absUrl.replace("file://", "");
-		Log.e(LCAT, Environment.getExternalStorageDirectory().getAbsolutePath());
-		// see
-		// http://stackoverflow.com/questions/18100885/set-raw-resource-as-ringtone-in-android
 		ContentValues values = new ContentValues();
 		values.put(MediaStore.MediaColumns.DATA, nativePath);
 		values.put(MediaStore.MediaColumns.TITLE, soundName);
@@ -86,26 +81,12 @@ public class TiringtonemanagerModule extends KrollModule {
 		values.put(MediaStore.Audio.Media.IS_NOTIFICATION, true);
 		values.put(MediaStore.Audio.Media.IS_ALARM, true);
 		values.put(MediaStore.Audio.Media.IS_MUSIC, true);
-
-		Log.i(LCAT,
-				"==========================================\nthe absolute path of the file is :"
-						+ ringtoneFile.nativePath());
-		/*
-		 * file:///storage/emulated/0/de.appwerft.tierstimmenarchiv/
-		 * Ochotona_curzoniae_S1439_08.mp3
-		 */
-		Log.i(LCAT, "the soundName :" + soundName);
 		Uri uri = MediaStore.Audio.Media.getContentUriForPath(nativePath);
 		Context context = TiApplication.getInstance().getApplicationContext();
 		ContentResolver mCr = context.getContentResolver();
-
 		mCr.delete(uri, MediaStore.MediaColumns.DATA + "=\"" + nativePath
 				+ "\"", null);
-
 		Uri mUri = mCr.insert(uri, values);
-
-		Log.i(LCAT, "the ringtone uri is :" + mUri.toString());
-
 		if (Build.VERSION.SDK_INT < 23) {
 			try {
 				RingtoneManager.setActualDefaultRingtoneUri(context,
@@ -115,9 +96,6 @@ public class TiringtonemanagerModule extends KrollModule {
 			} catch (Exception e) {
 				Log.e(LCAT, "RingtoneManagersetActualDefaultRingtoneUri", e);
 			}
-
-			// Alternatives:
-			// http://stackoverflow.com/questions/17570636/how-to-set-mp3-as-ringtone
 		} else {
 			Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
 			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE,
