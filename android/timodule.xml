@@ -7,6 +7,9 @@
 	<iphone>
 	</iphone>
 	<android xmlns:android="http://schemas.android.com/apk/res/android">
+        <uses-permission tools:node="replace" android:maxSdkVersion="22" android:name="android.permission.WRITE_SETTINGS" ></uses-permission>
+        <uses-permission tools:node="replace" android:maxSdkVersion="22" android:name="android.permission.CHANGE_CONFIGURATION" ></uses-permission>
+        <uses-permission tools:node="replace" android:maxSdkVersion="22" android:name="android.permission.MODIFY_AUDIO_SETTINGS" ></uses-permission>
 	</android>
 	<mobileweb>
 	</mobileweb>
