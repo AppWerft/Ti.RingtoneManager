@@ -37,9 +37,23 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.app.ActivityCompat;
 import android.app.Activity;
 
+
+
 @Kroll.module(name = "Tiringtonemanager", id = "de.appwerft.ringtonmanager")
 public class TiringtonemanagerModule extends KrollModule {
-
+	final int RQS_RINGTONEPICKER = 1;
+	private boolean setRingtone(Uri mUri) {
+		Context context = TiApplication.getInstance().getApplicationContext();
+		try {
+			RingtoneManager.setActualDefaultRingtoneUri(context,
+					RingtoneManager.TYPE_RINGTONE, mUri);
+			Log.i(LCAT, "RingtoneManagersetActualDefaultRingtoneUri SUCCESSFUL");
+		} catch (Exception e) {
+			Log.e(LCAT, "RingtoneManagersetActualDefaultRingtoneUri", e);
+			return false;
+		}
+		return true;
+	}
 	// Standard Debugging variables
 	private static final String LCAT = "Tiringtone";
 	private static final boolean DBG = TiConfig.LOGD;
@@ -97,29 +111,41 @@ public class TiringtonemanagerModule extends KrollModule {
 		mCr.delete(uri,
 				MediaStore.MediaColumns.DATA + "=\"" + soundPath + "\"", null);
 		Uri mUri = mCr.insert(uri, values);
-		if (Build.VERSION.SDK_INT < 23) {
-			try {
-				RingtoneManager.setActualDefaultRingtoneUri(context,
-						RingtoneManager.TYPE_RINGTONE, mUri);
-				Log.i(LCAT,
-						"RingtoneManagersetActualDefaultRingtoneUri SUCCESSFUL");
-			} catch (Exception e) {
-				Log.e(LCAT, "RingtoneManagersetActualDefaultRingtoneUri", e);
-				return false;
-			}
-		} else {
-			Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
-			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE,
-					"Bestätige jetzt „" + soundName + "“");
-			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
-			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
-			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE,
-					RingtoneManager.TYPE_RINGTONE);
-			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, mUri);
-		//	intent.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, mUri);
-			TiApplication.getInstance().getCurrentActivity()
-					.startActivityForResult(intent, 999);
+
+		if (Build.VERSION.SDK_INT >= 23) {
+			/*
+			 * Intent intent = new
+			 * Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+			 * intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE,
+			 * "Bestätige jetzt „" + soundName + "“");
+			 * intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT,
+			 * false);
+			 * intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT,
+			 * true); intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE,
+			 * RingtoneManager.TYPE_RINGTONE);
+			 * intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
+			 * mUri); //
+			 * intent.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, //
+			 * mUri); TiApplication.getInstance().getCurrentActivity()
+			 * .startActivityForResult(intent, 999);
+			 */
 		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (Settings.System.canWrite(context)) {
+				setRingtone(mUri);
+			} else {
+				Intent intent = new Intent(
+						android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
+				intent.setData(Uri.parse("package:"
+						+ TiApplication.getInstance().getCurrentActivity()
+								.getPackageName()));
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				TiApplication.getInstance().getCurrentActivity()
+						.startActivity(intent);
+			}
+		} else
+			setRingtone(mUri);
 		return true;
 	}
 }
