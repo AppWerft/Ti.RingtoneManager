@@ -61,31 +61,41 @@ public class TiringtonemanagerModule extends KrollModule {
 			Log.e(LCAT, "url not provided");
 			return false;
 		}
+
 		String absUrl = resolveUrl(null,
 				TiConvert.toString(d.get(TiC.PROPERTY_URL)));
-		
+		ringtoneFile = TiFileFactory.createTitaniumFile(
+				new String[] { absUrl }, false);
 		String soundName = TiApplication.getInstance().getPackageName()
 				+ " ringtone";
 		if (d.containsKey(TiC.PROPERTY_TITLE)) {
 			soundName = (String) d.get(TiC.PROPERTY_TITLE);
 		}
-		String nativePath = absUrl.replace("file://", "");
+		String soundPath = absUrl.replace("file://", "");
+
+		File file = new File(soundPath);
+		if (!file.exists()) {
+			return false;
+		}
+		Log.e(LCAT, Environment.getExternalStorageDirectory().getAbsolutePath());
+		// see
+		// http://stackoverflow.com/questions/18100885/set-raw-resource-as-ringtone-in-android
 		ContentValues values = new ContentValues();
-		values.put(MediaStore.MediaColumns.DATA, nativePath);
+		values.put(MediaStore.MediaColumns.DATA, soundPath);
 		values.put(MediaStore.MediaColumns.TITLE, soundName);
 		values.put(MediaStore.MediaColumns.SIZE, ringtoneFile.size());
 		values.put(MediaStore.MediaColumns.MIME_TYPE, "audio/mp3");
-		values.put(MediaStore.Audio.Media.ARTIST, "NoArtist");
+		values.put(MediaStore.Audio.Media.ARTIST, "Nature");
 		values.put(MediaStore.Audio.Media.DURATION, 20000);
 		values.put(MediaStore.Audio.Media.IS_RINGTONE, true);
 		values.put(MediaStore.Audio.Media.IS_NOTIFICATION, true);
 		values.put(MediaStore.Audio.Media.IS_ALARM, true);
 		values.put(MediaStore.Audio.Media.IS_MUSIC, true);
-		Uri uri = MediaStore.Audio.Media.getContentUriForPath(nativePath);
+		Uri uri = MediaStore.Audio.Media.getContentUriForPath(soundPath);
 		Context context = TiApplication.getInstance().getApplicationContext();
 		ContentResolver mCr = context.getContentResolver();
-		mCr.delete(uri, MediaStore.MediaColumns.DATA + "=\"" + nativePath
-				+ "\"", null);
+		mCr.delete(uri,
+				MediaStore.MediaColumns.DATA + "=\"" + soundPath + "\"", null);
 		Uri mUri = mCr.insert(uri, values);
 		if (Build.VERSION.SDK_INT < 23) {
 			try {
@@ -95,6 +105,7 @@ public class TiringtonemanagerModule extends KrollModule {
 						"RingtoneManagersetActualDefaultRingtoneUri SUCCESSFUL");
 			} catch (Exception e) {
 				Log.e(LCAT, "RingtoneManagersetActualDefaultRingtoneUri", e);
+				return false;
 			}
 		} else {
 			Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
@@ -105,7 +116,7 @@ public class TiringtonemanagerModule extends KrollModule {
 			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE,
 					RingtoneManager.TYPE_RINGTONE);
 			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, mUri);
-			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, mUri);
+		//	intent.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, mUri);
 			TiApplication.getInstance().getCurrentActivity()
 					.startActivityForResult(intent, 999);
 		}
