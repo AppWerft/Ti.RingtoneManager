@@ -11,7 +11,9 @@ import org.appcelerator.kroll.common.TiConfig;
 import org.appcelerator.titanium.io.TiBaseFile;
 import org.appcelerator.titanium.io.TiFileFactory;
 import org.appcelerator.titanium.TiC;
+import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.util.TiConvert;
+import org.appcelerator.kroll.KrollObject;
 import android.app.Activity;
 import android.os.Build;
 import java.io.File;
@@ -37,11 +39,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.app.ActivityCompat;
 import android.app.Activity;
 
-
-
 @Kroll.module(name = "Tiringtonemanager", id = "de.appwerft.ringtonmanager")
 public class TiringtonemanagerModule extends KrollModule {
-	final int RQS_RINGTONEPICKER = 1;
+
 	private boolean setRingtone(Uri mUri) {
 		Context context = TiApplication.getInstance().getApplicationContext();
 		try {
@@ -49,14 +49,17 @@ public class TiringtonemanagerModule extends KrollModule {
 					RingtoneManager.TYPE_RINGTONE, mUri);
 			Log.i(LCAT, "RingtoneManagersetActualDefaultRingtoneUri SUCCESSFUL");
 		} catch (Exception e) {
-			Log.e(LCAT, "RingtoneManagersetActualDefaultRingtoneUri", e);
+			Log.e(LCAT, "exception: " + e.getMessage());             
+		    Log.e(LCAT, "exception: " + e.toString());
 			return false;
 		}
 		return true;
 	}
+
 	// Standard Debugging variables
 	private static final String LCAT = "Tiringtone";
 	private static final boolean DBG = TiConfig.LOGD;
+	static final int REQPERM = 1;
 
 	public TiringtonemanagerModule() {
 		super();
@@ -91,9 +94,6 @@ public class TiringtonemanagerModule extends KrollModule {
 		if (!file.exists()) {
 			return false;
 		}
-		Log.e(LCAT, Environment.getExternalStorageDirectory().getAbsolutePath());
-		// see
-		// http://stackoverflow.com/questions/18100885/set-raw-resource-as-ringtone-in-android
 		ContentValues values = new ContentValues();
 		values.put(MediaStore.MediaColumns.DATA, soundPath);
 		values.put(MediaStore.MediaColumns.TITLE, soundName);
@@ -111,41 +111,25 @@ public class TiringtonemanagerModule extends KrollModule {
 		mCr.delete(uri,
 				MediaStore.MediaColumns.DATA + "=\"" + soundPath + "\"", null);
 		Uri mUri = mCr.insert(uri, values);
-
-		if (Build.VERSION.SDK_INT >= 23) {
-			/*
-			 * Intent intent = new
-			 * Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
-			 * intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE,
-			 * "Bestätige jetzt „" + soundName + "“");
-			 * intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT,
-			 * false);
-			 * intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT,
-			 * true); intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE,
-			 * RingtoneManager.TYPE_RINGTONE);
-			 * intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
-			 * mUri); //
-			 * intent.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, //
-			 * mUri); TiApplication.getInstance().getCurrentActivity()
-			 * .startActivityForResult(intent, 999);
-			 */
-		}
-
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			Activity activity = TiApplication.getInstance()
+					.getCurrentActivity();
 			if (Settings.System.canWrite(context)) {
 				setRingtone(mUri);
 			} else {
 				Intent intent = new Intent(
 						android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
-				intent.setData(Uri.parse("package:"
-						+ TiApplication.getInstance().getCurrentActivity()
-								.getPackageName()));
+				intent.setData(Uri.parse("package:" + activity.getPackageName()));
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				TiApplication.getInstance().getCurrentActivity()
-						.startActivity(intent);
+				activity.startActivityForResult(intent, REQPERM);
 			}
 		} else
 			setRingtone(mUri);
 		return true;
+	}
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		setRingtone(mUri);
+		Log.i(LCAT, "requestCode=" + requestCode);
+		Log.i(LCAT, "resultcode="+ resultCode);
 	}
 }
