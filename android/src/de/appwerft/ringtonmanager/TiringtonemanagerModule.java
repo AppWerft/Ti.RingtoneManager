@@ -121,13 +121,14 @@ public class TiringtonemanagerModule extends KrollModule implements
 		Uri mUri = mCr.insert(uri, values);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			Log.i(LCAT, "Build.VERSION.SDK_INT=" + Build.VERSION.SDK_INT);
-			Activity activity = TiApplication.getInstance()
-					.getCurrentActivity();
+			
 			if (Settings.System.canWrite(context)) {
 				Log.i(LCAT, "Settings.System.canWrite=true");
 				setRingtone(mUri);
 			} else {
 				Log.i(LCAT, "try to get write permissin from user");
+				Activity activity = TiApplication.getInstance()
+						.getCurrentActivity();
 				Activity mActivity = this.getActivity();
 				TiActivitySupport support = (TiActivitySupport) mActivity;
 				Intent intent = new Intent(
