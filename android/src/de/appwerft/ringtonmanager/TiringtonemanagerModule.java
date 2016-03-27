@@ -14,12 +14,18 @@ import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.kroll.KrollObject;
+import org.appcelerator.titanium.util.TiActivityResultHandler;
+import org.appcelerator.titanium.util.TiActivitySupport;
+
+import org.appcelerator.kroll.KrollFunction;
+
 import android.app.Activity;
 import android.os.Build;
 import java.io.File;
 import android.os.Environment;
 import android.os.Build;
 import java.util.HashMap;
+import java.util.ArrayList;
 import android.content.ContentValues;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -40,7 +46,9 @@ import android.support.v4.app.ActivityCompat;
 import android.app.Activity;
 
 @Kroll.module(name = "Tiringtonemanager", id = "de.appwerft.ringtonmanager")
-public class TiringtonemanagerModule extends KrollModule {
+public class TiringtonemanagerModule extends KrollModule implements
+		TiActivityResultHandler {
+	protected KrollFunction resultCallback;
 
 	private boolean setRingtone(Uri mUri) {
 		Context context = TiApplication.getInstance().getApplicationContext();
@@ -49,17 +57,17 @@ public class TiringtonemanagerModule extends KrollModule {
 					RingtoneManager.TYPE_RINGTONE, mUri);
 			Log.i(LCAT, "RingtoneManagersetActualDefaultRingtoneUri SUCCESSFUL");
 		} catch (Exception e) {
-			Log.e(LCAT, "exception: " + e.getMessage());             
-		    Log.e(LCAT, "exception: " + e.toString());
+			Log.e(LCAT, "exception: " + e.getMessage());
+			Log.e(LCAT, "exception: " + e.toString());
 			return false;
 		}
 		return true;
 	}
 
-	// Standard Debugging variables
 	private static final String LCAT = "Tiringtone";
 	private static final boolean DBG = TiConfig.LOGD;
 	static final int REQPERM = 1;
+	private Uri mUri = null;
 
 	public TiringtonemanagerModule() {
 		super();
@@ -112,24 +120,45 @@ public class TiringtonemanagerModule extends KrollModule {
 				MediaStore.MediaColumns.DATA + "=\"" + soundPath + "\"", null);
 		Uri mUri = mCr.insert(uri, values);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			Log.i(LCAT, "Build.VERSION.SDK_INT=" + Build.VERSION.SDK_INT);
 			Activity activity = TiApplication.getInstance()
 					.getCurrentActivity();
 			if (Settings.System.canWrite(context)) {
+				Log.i(LCAT, "Settings.System.canWrite=true");
 				setRingtone(mUri);
 			} else {
+				Log.i(LCAT, "try to get write permissin from user");
+				Activity mActivity = this.getActivity();
+				TiActivitySupport support = (TiActivitySupport) mActivity;
 				Intent intent = new Intent(
 						android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
-				intent.setData(Uri.parse("package:" + activity.getPackageName()));
+				intent.setData(Uri.parse("package:"
+						+ mActivity.getPackageName()));
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				activity.startActivityForResult(intent, REQPERM);
+				support.launchActivityForResult(intent, REQPERM, this);
 			}
 		} else
 			setRingtone(mUri);
 		return true;
 	}
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		setRingtone(mUri);
-		Log.i(LCAT, "requestCode=" + requestCode);
-		Log.i(LCAT, "resultcode="+ resultCode);
+
+	// https://bitbucket.org/prakashmcam/voice2textmodule/src/8901e4ead35504eda9ca499b4708ecc07a4dc007/src/learappcelerator/voice2text/Voice2textModule.java?at=master&fileviewer=file-view-default
+	public void onError(Activity arg0, int arg1, Exception e) {
+		// TODO Auto-generated method stub
+
+		Log.i(LCAT, "onError Called" + e.getMessage());
 	}
+
+	public void onResult(Activity act, int requestCode, int resultCode,
+			Intent data) {
+		Log.i(LCAT, "requestCode=" + requestCode);
+		Log.i(LCAT, "resultCode=" + resultCode);
+		if (requestCode == REQPERM) {
+			Log.i(LCAT, "requestCode=" + requestCode);
+			Log.i(LCAT, "resultCode=" + resultCode);
+
+			setRingtone(mUri);
+		}
+	}
+
 }
