@@ -136,7 +136,7 @@ public class TiringtonemanagerModule extends KrollModule {
 				Intent intent = new Intent(
 						android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
 				intent.setData(Uri.parse("package:" + activity.getPackageName()));
-				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 				activity.startActivityForResult(intent,
 						REQUEST_SYSTEM_WRITE_PERMISSION);
 				testDelaydRingtoneSetting(mUri, mCallback);
