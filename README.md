@@ -7,7 +7,7 @@ Currently this module has only one method 'setActualDefaultRingtone({url:nativeP
 
 On Android6+ the module opens an intent to ask the user for system write permission (if not granted before)
 
-![]()
+![](https://raw.githubusercontent.com/AppWerft/Ti.RingtoneManager/master/perm.png)
 
 
 Usage
