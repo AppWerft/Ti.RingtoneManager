@@ -24,6 +24,7 @@ import android.os.Build;
 import java.io.File;
 import android.os.Environment;
 import android.os.Build;
+import android.view.KeyEvent;
 import java.util.HashMap;
 import java.util.ArrayList;
 import android.content.ContentValues;
@@ -49,9 +50,10 @@ import android.app.Activity;
 public class TiringtonemanagerModule extends KrollModule {
 	private static final String LCAT = "Tiringtone";
 	private static final boolean DBG = TiConfig.LOGD;
-	static final int REQPERM = 1;
+	static final int REQUEST_SYSTEM_WRITE_PERMISSION = 23;
 	public Uri mUri = null;
-	private boolean setRingtone(Uri mUri) {
+
+	private boolean setRingtone(Uri mUri, KrollFunction mCallback) {
 		Context context = TiApplication.getInstance().getApplicationContext();
 		try {
 			RingtoneManager.setActualDefaultRingtoneUri(context,
@@ -60,6 +62,9 @@ public class TiringtonemanagerModule extends KrollModule {
 			Log.i(LCAT,
 					"RingtoneManagersetActualDefaultRingtoneUri "
 							+ mUri.toString());
+			HashMap<String, Boolean> map = new HashMap<String, Boolean>();
+			map.put("success", true);
+			mCallback.call(getKrollObject(), map);
 
 		} catch (Exception e) {
 			Log.e(LCAT, "exception: " + e.getMessage());
@@ -68,6 +73,7 @@ public class TiringtonemanagerModule extends KrollModule {
 		}
 		return true;
 	}
+
 	public TiringtonemanagerModule() {
 		super();
 	}
@@ -78,7 +84,8 @@ public class TiringtonemanagerModule extends KrollModule {
 	}
 
 	@Kroll.method
-	public boolean setActualDefaultRingtone(Object args) {
+	public boolean setActualDefaultRingtone(Object args,
+			@Kroll.argument(optional = true) KrollFunction mCallback) {
 		HashMap<String, String> d = (HashMap<String, String>) args;
 		final TiBaseFile ringtoneFile;
 		if (!d.containsKey(TiC.PROPERTY_URL)) {
@@ -96,7 +103,6 @@ public class TiringtonemanagerModule extends KrollModule {
 			soundName = (String) d.get(TiC.PROPERTY_TITLE);
 		}
 		String soundPath = absUrl.replace("file://", "");
-
 		File file = new File(soundPath);
 		if (!file.exists()) {
 			return false;
@@ -122,7 +128,7 @@ public class TiringtonemanagerModule extends KrollModule {
 			Log.i(LCAT, "Build.VERSION.SDK_INT=" + Build.VERSION.SDK_INT);
 			if (Settings.System.canWrite(context)) {
 				Log.i(LCAT, "Settings.System.canWrite=true");
-				setRingtone(mUri);
+				setRingtone(mUri, mCallback);
 			} else {
 				Log.i(LCAT, "try to get write permissin from user");
 				Activity activity = TiApplication.getInstance()
@@ -131,25 +137,30 @@ public class TiringtonemanagerModule extends KrollModule {
 						android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
 				intent.setData(Uri.parse("package:" + activity.getPackageName()));
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				activity.startActivityForResult(intent, REQPERM);
-				testDelaydRingtoneSetting(mUri);
+				activity.startActivityForResult(intent,
+						REQUEST_SYSTEM_WRITE_PERMISSION);
+				testDelaydRingtoneSetting(mUri, mCallback);
 			}
 		} else
-			setRingtone(mUri);
+			setRingtone(mUri, mCallback);
 		return true;
 	}
 
-	private void testDelaydRingtoneSetting(Uri mUri) {
-		Uri ringtoneUri = mUri;
+	private void testDelaydRingtoneSetting(Uri mUri, KrollFunction mCallback) {
+		final Uri ringtoneUri = mUri;
+		final KrollFunction callback = mCallback;
+		final Context context = TiApplication.getInstance()
+				.getApplicationContext();
 		new android.os.Handler().postDelayed(new Runnable() {
 			public void run() {
-				if (Settings.System.canWrite(TiApplication.getInstance()
-						.getApplicationContext()))
-					setRingtone(ringtoneUri);
-				else
-					testDelaydRingtoneSetting(ringtoneUri);
+				if (Settings.System.canWrite(context)) {
+					Activity activity = TiApplication.getInstance()
+							.getCurrentActivity();
+					activity.finishActivity(REQUEST_SYSTEM_WRITE_PERMISSION);
+					setRingtone(ringtoneUri, callback);
+				} else
+					testDelaydRingtoneSetting(ringtoneUri, callback);
 			}
 		}, 1000);
 	}
-
 }

@@ -5,6 +5,8 @@ This Titanium module is a wrapper to [Androids Ringtonemanager](http://developer
 
 Currently this module has only one method 'setActualDefaultRingtone({url:nativePath_to_mp3,title:NAME_OF_SOUND})'
 
+On Android6+ the module opens an intent to ask the user for system write permission (if not granted before)
+
 
 
 ~~~
@@ -19,6 +21,10 @@ module.exports = function(record) {
             RingTone.setActualDefaultRingtone({
                 url : soundfile.nativePath,
                 title : record.species_latin
+            },function(_e){
+                if (_success==true) {
+                    Ti.UI.createNotification({message:'Ringtone added and changed'}).show()
+                }
             });
         }
     });
