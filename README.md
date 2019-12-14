@@ -3,11 +3,7 @@ Ti.RingtoneManager
 
 This Titanium module is a wrapper to [Androids Ringtonemanager](http://developer.android.com/reference/android/media/RingtoneManager.html)
 
-Currently this module has only one method 'setActualDefaultRingtone({url:nativePath_to_mp3,title:NAME_OF_SOUND})'
 
-On Android6+ the module opens an intent to ask the user for system write permission (if not granted before)
-
-![](https://raw.githubusercontent.com/AppWerft/Ti.RingtoneManager/master/perm.png)
 
 
 ### Constants 
@@ -19,7 +15,7 @@ On Android6+ the module opens an intent to ask the user for system write permiss
 * 
 ## Methods
 
-### getAllRingtones
+### getAllRingtones()
 
 #### Parameter:
 type (see above) 
@@ -32,11 +28,42 @@ Returns a list with Objects.
 * uri
 * title
 
-### playRingtone
+```javascript
+const RTM = require("ti.ringtonemanager");
+var Picker = Ti.UI.createPicker({});
+   
+Picker.add(RTM.getAllRingtones(RTM.TYPE_ALL).map(function(tone) {
+    return Ti.UI.createPickerRow({
+            title : tone.title,
+            uri : tone.uri
+    });
+}));
+   
+Picker.addEventListener("change", e => {
+        RTM.playRingtone(e.row.uri);
+        Settings.set("CALENDAR_RINGTONE",e.row.uri); 
+        //Settings.set("CALENDAR_SOUND", e.value);
+});
+```
+
+### playRingtone()
 #### Parameter
 * Uri, selected from list
 
 
+
+### 
+
+On Android6+ the module opens an intent to ask the user for system write permission (if not granted before)
+
+![](https://raw.githubusercontent.com/AppWerft/Ti.RingtoneManager/master/perm.png)
+
+### setActualDefaultRington()
+#### Parameter
+Object with 
+
+* property `file` as nativePath 
+* property `title`
 
 Usage
 -----
