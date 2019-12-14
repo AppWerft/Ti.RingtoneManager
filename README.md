@@ -10,10 +10,38 @@ On Android6+ the module opens an intent to ask the user for system write permiss
 ![](https://raw.githubusercontent.com/AppWerft/Ti.RingtoneManager/master/perm.png)
 
 
+### Constants 
+
+* TYPE_ALARM
+* TYPE_NOTIFICATION
+* TYPE_RINGTONE
+* TYPE_ALL
+* 
+## Methods
+
+### getAllRingtones
+
+#### Parameter:
+type (see above) 
+
+#### Returns
+
+Returns a list with Objects.
+
+* id
+* uri
+* title
+
+### playRingtone
+#### Parameter
+* Uri, selected from list
+
+
+
 Usage
 -----
 ~~~
-var RingTone = require('de.appwerft.ringtonmanager');
+var RingTone = require('ti.ringtonmanager');
 
 module.exports = function(record) {
     if (!Ti.Filesystem.isExternalStoragePresent()) return;
