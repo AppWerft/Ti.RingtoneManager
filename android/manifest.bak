@@ -2,9 +2,9 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 3.0.0
-apiversion: 4
-architectures: arm64-v8a armeabi-v7a x86
+version: 1.0.9
+apiversion: 2
+architectures: armeabi armeabi-v7a x86
 description: tiringtonemanager
 author: Raner Schleevoigt
 license: allres verboten
@@ -12,7 +12,7 @@ copyright: Copyright (c) 2016 by Your Company
 
 # these should not be edited
 name: tiringtonemanager
-moduleid: ti.ringtonemanager
+moduleid: de.appwerft.ringtonmanager
 guid: 79cfafdb-34b1-49b9-bee3-5334ea2fdddb
 platform: android
-minsdk: 8.2.0
+minsdk: 5.1.0.GA

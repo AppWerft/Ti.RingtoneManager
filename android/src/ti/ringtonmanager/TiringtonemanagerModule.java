@@ -1,7 +1,7 @@
 /**
  * ant; unzip -uo  dist/de.appwerft.ringtonmanager-android-1.0.7.zip -d  ~/Documents/APPC_WORKSPACE/Tierstimmenarchiv/
  */
-package de.appwerft.ringtonmanager;
+package ti.ringtonmanager;
 
 import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
@@ -16,7 +16,7 @@ import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.kroll.KrollObject;
 import org.appcelerator.titanium.util.TiActivityResultHandler;
 import org.appcelerator.titanium.util.TiActivitySupport;
-
+import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
 
 import android.app.Activity;
@@ -26,6 +26,7 @@ import android.os.Environment;
 import android.os.Build;
 import android.view.KeyEvent;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.ArrayList;
 import android.content.ContentValues;
 import android.content.ContentResolver;
@@ -42,21 +43,31 @@ import android.provider.Settings.NameValueTable;
 import android.provider.Settings;
 import android.provider.Settings.System;
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.app.ActivityCompat;
 import android.app.Activity;
 
-@Kroll.module(name = "Tiringtonemanager", id = "de.appwerft.ringtonmanager")
+@Kroll.module(name = "Tiringtonemanager", id = "ti.ringtonemanager")
 public class TiringtonemanagerModule extends KrollModule {
 	private static final String LCAT = "Tiringtone";
 	private static final boolean DBG = TiConfig.LOGD;
 	static final int REQUEST_SYSTEM_WRITE_PERMISSION = 23;
 	public Uri mUri = null;
+	private Context ctx= TiApplication.getInstance().getApplicationContext();
+	@Kroll.constant
+	public static int TYPE_ALAM = RingtoneManager.TYPE_ALARM;
+	@Kroll.constant
+	public static int TYPE_NOTIFICATION = RingtoneManager.TYPE_NOTIFICATION;
+	@Kroll.constant
+	public static int TYPE_RINGTONE = RingtoneManager.TYPE_RINGTONE;
+	@Kroll.constant
+	public static int TYPE_ALL = RingtoneManager.TYPE_ALL;
+	
 
 	private boolean setRingtone(Uri mUri, KrollFunction mCallback) {
-		Context context = TiApplication.getInstance().getApplicationContext();
 		try {
-			RingtoneManager.setActualDefaultRingtoneUri(context,
+			RingtoneManager.setActualDefaultRingtoneUri(ctx,
 					RingtoneManager.TYPE_RINGTONE, mUri);
 			Log.i(LCAT, "RingtoneManagersetActualDefaultRingtoneUri SUCCESSFUL");
 			Log.i(LCAT,
@@ -83,6 +94,31 @@ public class TiringtonemanagerModule extends KrollModule {
 		Log.d(LCAT, "inside onAppCreate");
 	}
 
+	@Kroll.method
+	public Object getAllRingtones(int type) {
+		ArrayList<KrollDict> list = new ArrayList<KrollDict>(); 
+		RingtoneManager manager = new RingtoneManager(ctx);
+		    manager.setType(type);
+		    Cursor cursor = manager.getCursor();
+		    while (cursor.moveToNext()) {
+		    	KrollDict res = new KrollDict();
+		        String notificationTitle = cursor.getString(RingtoneManager.TITLE_COLUMN_INDEX);
+		        String notificationUri = cursor.getString(RingtoneManager.URI_COLUMN_INDEX) + "/" + cursor.getString(RingtoneManager.ID_COLUMN_INDEX);
+		        res.put("title",notificationTitle);
+		        res.put("uri",notificationUri);
+		        res.put("id",cursor.getString(RingtoneManager.ID_COLUMN_INDEX));
+		        list.add(res);
+		    }
+		    return list.toArray();
+	}
+	
+	@Kroll.method 
+	public void playRingtone(String uri) {
+		Ringtone ringtone = RingtoneManager.getRingtone(ctx, Uri.parse(uri));
+		ringtone.setLooping(false);
+		ringtone.play();
+	}
+	
 	@Kroll.method
 	public boolean setActualDefaultRingtone(Object args,
 			@Kroll.argument(optional = true) KrollFunction mCallback) {
@@ -119,14 +155,13 @@ public class TiringtonemanagerModule extends KrollModule {
 		values.put(MediaStore.Audio.Media.IS_ALARM, true);
 		values.put(MediaStore.Audio.Media.IS_MUSIC, true);
 		Uri uri = MediaStore.Audio.Media.getContentUriForPath(soundPath);
-		Context context = TiApplication.getInstance().getApplicationContext();
-		ContentResolver mCr = context.getContentResolver();
+		ContentResolver mCr = ctx.getContentResolver();
 		mCr.delete(uri,
 				MediaStore.MediaColumns.DATA + "=\"" + soundPath + "\"", null);
 		Uri mUri = mCr.insert(uri, values);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			Log.i(LCAT, "Build.VERSION.SDK_INT=" + Build.VERSION.SDK_INT);
-			if (Settings.System.canWrite(context)) {
+			if (Settings.System.canWrite(ctx)) {
 				Log.i(LCAT, "Settings.System.canWrite=true");
 				setRingtone(mUri, mCallback);
 			} else {
@@ -149,11 +184,9 @@ public class TiringtonemanagerModule extends KrollModule {
 	private void testDelaydRingtoneSetting(Uri mUri, KrollFunction mCallback) {
 		final Uri ringtoneUri = mUri;
 		final KrollFunction callback = mCallback;
-		final Context context = TiApplication.getInstance()
-				.getApplicationContext();
 		new android.os.Handler().postDelayed(new Runnable() {
 			public void run() {
-				if (Settings.System.canWrite(context)) {
+				if (Settings.System.canWrite(ctx)) {
 					Activity activity = TiApplication.getInstance()
 							.getCurrentActivity();
 					activity.finishActivity(REQUEST_SYSTEM_WRITE_PERMISSION);
